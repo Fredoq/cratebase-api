@@ -12,7 +12,7 @@ The repository pins the SDK in `global.json`.
 
 ## Solution Layout
 
-- `src/Cratebase.Domain` - domain entities, value objects, enums, and invariants.
+- `src/Cratebase.Domain` - reserved for domain entities, value objects, enums, and invariants after the domain model is designed.
 - `src/Cratebase.Application` - application services and use-case orchestration.
 - `src/Cratebase.Infrastructure` - persistence, imports, exports, and external infrastructure adapters.
 - `src/Cratebase.Api` - ASP.NET Core composition root and HTTP endpoints.
