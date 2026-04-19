@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Cratebase.Application\Cratebase.Application.csproj" />
+    <ProjectReference Include="..\Cratebase.Infrastructure\Cratebase.Infrastructure.csproj" />
+    <ProjectReference Include="..\Cratebase.Domain\Cratebase.Domain.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+</Project>

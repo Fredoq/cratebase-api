@@ -1,0 +1,6 @@
+@Cratebase.Api_HostAddress = http://localhost:5094
+
+GET {{Cratebase.Api_HostAddress}}/health
+Accept: application/json
+
+###
