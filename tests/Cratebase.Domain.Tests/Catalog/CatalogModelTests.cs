@@ -23,10 +23,12 @@ public sealed class CatalogModelTests
     public void The_same_track_can_appear_on_multiple_releases_and_keep_one_canonical_rating()
     {
         Track track = Track.Create(TrackId.New(), "Blue Monday").WithRating(Rating.FromValue(10));
-        Release firstRelease = Release.Create(ReleaseId.New(), "Blue Monday")
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), track.Id, TrackPosition.FromNumber(1)));
-        Release secondRelease = Release.Create(ReleaseId.New(), "Substance")
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), track.Id, TrackPosition.FromNumber(5)));
+        var firstReleaseId = ReleaseId.New();
+        var secondReleaseId = ReleaseId.New();
+        Release firstRelease = Release.Create(firstReleaseId, "Blue Monday")
+            .WithTrack(ReleaseTrack.Create(firstReleaseId, track.Id, TrackPosition.FromNumber(1)));
+        Release secondRelease = Release.Create(secondReleaseId, "Substance")
+            .WithTrack(ReleaseTrack.Create(secondReleaseId, track.Id, TrackPosition.FromNumber(5)));
 
         Assert.Equal(track.Id, firstRelease.Tracklist.Single().TrackId);
         Assert.Equal(track.Id, secondRelease.Tracklist.Single().TrackId);
@@ -38,10 +40,11 @@ public sealed class CatalogModelTests
     {
         Track firstTrack = Track.Create(TrackId.New(), "Age of Consent").WithRating(Rating.FromValue(10));
         Track secondTrack = Track.Create(TrackId.New(), "We All Stand").WithRating(Rating.FromValue(8));
-        Release release = Release.Create(ReleaseId.New(), "Power, Corruption & Lies")
+        var releaseId = ReleaseId.New();
+        Release release = Release.Create(releaseId, "Power, Corruption & Lies")
             .WithRating(Rating.FromValue(7))
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), firstTrack.Id, TrackPosition.FromNumber(1)))
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), secondTrack.Id, TrackPosition.FromNumber(2)));
+            .WithTrack(ReleaseTrack.Create(releaseId, firstTrack.Id, TrackPosition.FromNumber(1)))
+            .WithTrack(ReleaseTrack.Create(releaseId, secondTrack.Id, TrackPosition.FromNumber(2)));
 
         ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [firstTrack, secondTrack]);
 
@@ -55,9 +58,10 @@ public sealed class CatalogModelTests
     {
         Track ratedTrack = Track.Create(TrackId.New(), "Leave Me Alone").WithRating(Rating.FromValue(9));
         var unratedTrack = Track.Create(TrackId.New(), "The Village");
-        Release release = Release.Create(ReleaseId.New(), "Power, Corruption & Lies")
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), ratedTrack.Id, TrackPosition.FromNumber(8)))
-            .WithTrack(ReleaseTrack.Create(ReleaseId.New(), unratedTrack.Id, TrackPosition.FromNumber(9)));
+        var releaseId = ReleaseId.New();
+        Release release = Release.Create(releaseId, "Power, Corruption & Lies")
+            .WithTrack(ReleaseTrack.Create(releaseId, ratedTrack.Id, TrackPosition.FromNumber(8)))
+            .WithTrack(ReleaseTrack.Create(releaseId, unratedTrack.Id, TrackPosition.FromNumber(9)));
 
         ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [ratedTrack, unratedTrack]);
         ReleaseTrackRatingSummary emptySummary = ReleaseTrackRatingCalculator.Calculate(release, [unratedTrack]);
@@ -66,5 +70,16 @@ public sealed class CatalogModelTests
         Assert.Equal(1, summary.RatedTrackCount);
         Assert.Null(emptySummary.AverageRating);
         Assert.Equal(0, emptySummary.RatedTrackCount);
+    }
+
+    [Fact]
+    public void Release_rejects_tracklist_entries_for_another_release()
+    {
+        var release = Release.Create(ReleaseId.New(), "Movement");
+        var releaseTrack = ReleaseTrack.Create(ReleaseId.New(), TrackId.New(), TrackPosition.FromNumber(1));
+
+        DomainException exception = Assert.Throws<DomainException>(() => release.WithTrack(releaseTrack));
+
+        Assert.Equal("release_track.release_mismatch", exception.Code);
     }
 }

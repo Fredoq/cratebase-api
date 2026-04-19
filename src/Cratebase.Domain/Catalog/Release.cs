@@ -1,4 +1,5 @@
 using Cratebase.Domain.Ratings;
+using Cratebase.Domain.SharedKernel.Errors;
 using Cratebase.Domain.SharedKernel.Ids;
 using Cratebase.Domain.SharedKernel.Interfaces;
 using Cratebase.Domain.SharedKernel.Validation;
@@ -59,6 +60,11 @@ public sealed class Release : IEntity<ReleaseId>, ICreditTarget
     public Release WithTrack(ReleaseTrack releaseTrack)
     {
         ArgumentNullException.ThrowIfNull(releaseTrack);
+
+        if (releaseTrack.ReleaseId != Id)
+        {
+            throw new DomainException("release_track.release_mismatch", "Release track must belong to the release");
+        }
 
         Release release = Copy();
 
