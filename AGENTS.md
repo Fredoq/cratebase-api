@@ -223,12 +223,29 @@ When RabbitMQ is introduced:
 - Do not create commits or push branches unless the user explicitly asks.
 - By default, only the user performs commits and pushes.
 
+## Agent Development Workflow
+
+All development work must happen on a branch other than `main`.
+
+Default agent workflow:
+
+1. Create or switch to a working branch before changing repository files.
+2. Use branch prefixes that match the work type: `feat/*`, `fix/*`, `docs/*`, `test/*`, or `chore/*`.
+3. Implement the planned change on that branch.
+4. Open a GitHub pull request for the branch when the work is ready for remote review.
+5. Inspect and resolve all actionable CodeRabbit comments.
+6. Inspect and resolve all actionable SonarQube or SonarCloud findings.
+7. Re-run or wait for all required GitHub checks.
+8. Hand the task back to the project owner only after the pull request is green and all required checks have completed successfully.
+
+If GitHub access, push permissions, or PR creation is unavailable, state the blocker clearly and keep the local branch ready for the project owner.
+
 ## Before Implementation
 
 Before making code changes:
 
 1. Read the relevant existing code and local conventions.
-2. Check current repository status.
+2. Check the current branch and repository status.
 3. Make the smallest change that satisfies the task.
 4. Keep unrelated refactoring out of scope.
 5. Add or update tests when behavior changes.
