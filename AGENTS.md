@@ -186,7 +186,9 @@ When RabbitMQ is introduced:
 ## C# Design Rules
 
 - Classes and records should be `sealed` by default.
+- Put exactly one top-level type in each `.cs` file. This applies to classes, records, structs, interfaces, and enums. Name the file after that type.
 - Prefer immutability for value objects and contracts.
+- Use `Guid.CreateVersion7()` for newly generated GUID values, including typed IDs. Do not use `Guid.NewGuid()` for domain identifiers.
 - Use `class` for objects with identity, lifecycle, or behavior-heavy invariants.
 - Use `record` or `record struct` only when value semantics are intentional.
 - Do not use primary constructors for classes or records unless the repository explicitly adopts them later.
