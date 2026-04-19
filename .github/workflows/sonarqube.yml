@@ -51,15 +51,15 @@ jobs:
         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         shell: powershell
         run: |
-          New-Item -Path ${{ runner.temp }}\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path ${{ runner.temp }}\scanner
+          New-Item -Path "$env:RUNNER_TEMP\scanner" -ItemType Directory -Force
+          dotnet tool update dotnet-sonarscanner --tool-path "$env:RUNNER_TEMP\scanner"
 
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner begin /k:"Fredoq_cratebase-api" /o:"fredoq" /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          & "$env:RUNNER_TEMP\scanner\dotnet-sonarscanner" begin /k:"Fredoq_cratebase-api" /o:"fredoq" /d:sonar.token="$env:SONAR_TOKEN"
           dotnet restore Cratebase.slnx
           dotnet build Cratebase.slnx --configuration Release --no-restore
-          ${{ runner.temp }}\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+          & "$env:RUNNER_TEMP\scanner\dotnet-sonarscanner" end /d:sonar.token="$env:SONAR_TOKEN"
