@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
-public sealed record CassetteTape : Medium
+public sealed record CassetteTape : IMedium
 {
     private CassetteTape(string tapeType)
     {
@@ -11,7 +11,7 @@ public sealed record CassetteTape : Medium
 
     public string TapeType { get; }
 
-    public override string Description => TapeType;
+    public string Description => TapeType;
 
     public static CassetteTape Create(string tapeType)
     {

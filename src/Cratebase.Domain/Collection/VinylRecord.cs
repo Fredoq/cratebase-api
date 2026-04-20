@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
-public sealed record VinylRecord : Medium
+public sealed record VinylRecord : IMedium
 {
     private VinylRecord(string formatDescription)
     {
@@ -11,7 +11,7 @@ public sealed record VinylRecord : Medium
 
     public string FormatDescription { get; }
 
-    public override string Description => FormatDescription;
+    public string Description => FormatDescription;
 
     public static VinylRecord Create(string formatDescription)
     {

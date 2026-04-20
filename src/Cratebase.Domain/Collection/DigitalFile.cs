@@ -1,6 +1,6 @@
 namespace Cratebase.Domain.Collection;
 
-public sealed record DigitalFile : Medium
+public sealed record DigitalFile : IMedium
 {
     private DigitalFile(FilePath path, AudioFileFormat format)
     {
@@ -12,7 +12,7 @@ public sealed record DigitalFile : Medium
 
     public AudioFileFormat Format { get; }
 
-    public override string Description => $"{Format.Code} file";
+    public string Description => $"{Format.Code} file";
 
     public static DigitalFile Create(FilePath path, AudioFileFormat format)
     {

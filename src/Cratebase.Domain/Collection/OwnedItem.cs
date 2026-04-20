@@ -11,13 +11,13 @@ public sealed class OwnedItem : IEntity<OwnedItemId>
 
     public required OwnershipStatus Status { get; init; }
 
-    public required Medium Medium { get; init; }
+    public required IMedium Medium { get; init; }
 
     public string? Condition { get; init; }
 
     public string? StorageLocation { get; init; }
 
-    public static OwnedItem Create(OwnedItemId id, OwnedItemTarget target, OwnershipStatus status, Medium medium)
+    public static OwnedItem Create(OwnedItemId id, OwnedItemTarget target, OwnershipStatus status, IMedium medium)
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(status);

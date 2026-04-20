@@ -5,9 +5,9 @@ namespace Cratebase.Domain.Tests.SharedKernel.Ids;
 
 public sealed class TypedIdTests
 {
-    public static TheoryData<Guid> NewIds()
+    public static TheoryData<string> NewIds()
     {
-        var data = new TheoryData<Guid>();
+        var data = new TheoryData<string>();
         IEnumerable<Type> idTypes = typeof(ArtistId).Assembly
             .GetTypes()
             .Where(type => type is { IsPublic: true, IsValueType: true } && type.Name.EndsWith("Id", StringComparison.Ordinal))
@@ -24,7 +24,7 @@ public sealed class TypedIdTests
             }
 
             object id = newMethod.Invoke(null, null) ?? throw new InvalidOperationException($"Typed ID {idType.Name}.New returned null.");
-            data.Add((Guid)valueProperty.GetValue(id)!);
+            data.Add(((Guid)valueProperty.GetValue(id)!).ToString());
         }
 
         return data;
@@ -32,8 +32,8 @@ public sealed class TypedIdTests
 
     [Theory]
     [MemberData(nameof(NewIds))]
-    public void New_typed_ids_use_version_seven_guids(Guid value)
+    public void New_typed_ids_use_version_seven_guids(string value)
     {
-        Assert.Equal(7, value.Version);
+        Assert.Equal(7, Guid.Parse(value).Version);
     }
 }

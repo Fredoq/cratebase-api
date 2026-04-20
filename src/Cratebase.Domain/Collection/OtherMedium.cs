@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
-public sealed record OtherMedium : Medium
+public sealed record OtherMedium : IMedium
 {
     private OtherMedium(string name)
     {
@@ -11,7 +11,7 @@ public sealed record OtherMedium : Medium
 
     public string Name { get; }
 
-    public override string Description => Name;
+    public string Description => Name;
 
     public static OtherMedium Create(string name)
     {

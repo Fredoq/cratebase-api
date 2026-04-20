@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
-public sealed record CompactDisc : Medium
+public sealed record CompactDisc : IMedium
 {
     private CompactDisc(int discCount)
     {
@@ -11,7 +11,7 @@ public sealed record CompactDisc : Medium
 
     public int DiscCount { get; }
 
-    public override string Description => DiscCount == 1 ? "CD" : $"{DiscCount} CDs";
+    public string Description => DiscCount == 1 ? "CD" : $"{DiscCount} CDs";
 
     public static CompactDisc Create(int discCount)
     {
