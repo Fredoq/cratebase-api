@@ -3,7 +3,7 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
-public readonly record struct FilePath
+public sealed record FilePath
 {
     private FilePath(string value)
     {

@@ -9,9 +9,9 @@ public sealed record CreditTarget
     {
     }
 
-    public ReleaseId? ReleaseId { get; init; }
+    public ReleaseId? ReleaseId { get; private init; }
 
-    public TrackId? TrackId { get; init; }
+    public TrackId? TrackId { get; private init; }
 
     public bool IsRelease => ReleaseId is not null;
 
@@ -40,7 +40,7 @@ public sealed record CreditTarget
                 TrackId = track
             },
             ({ }, { }) => throw new DomainException("credit_target.ambiguous", "Credit target cannot reference both release and track"),
-            _ => throw new DomainException("credit_target.empty", "Credit target must reference a release or track")
+            (null, null) => throw new DomainException("credit_target.empty", "Credit target must reference a release or track")
         };
     }
 }

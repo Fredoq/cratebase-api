@@ -2,20 +2,23 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record DigitalFile : Medium
 {
-    public required FilePath Path { get; init; }
+    private DigitalFile(FilePath path, AudioFileFormat format)
+    {
+        Path = path;
+        Format = format;
+    }
 
-    public required AudioFileFormat Format { get; init; }
+    public FilePath Path { get; }
+
+    public AudioFileFormat Format { get; }
 
     public override string Description => $"{Format.Code} file";
 
     public static DigitalFile Create(FilePath path, AudioFileFormat format)
     {
+        ArgumentNullException.ThrowIfNull(path);
         ArgumentNullException.ThrowIfNull(format);
 
-        return new DigitalFile
-        {
-            Path = path,
-            Format = format
-        };
+        return new DigitalFile(path, format);
     }
 }

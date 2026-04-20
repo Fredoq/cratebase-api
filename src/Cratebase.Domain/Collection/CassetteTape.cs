@@ -4,15 +4,17 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record CassetteTape : Medium
 {
-    public required string TapeType { get; init; }
+    private CassetteTape(string tapeType)
+    {
+        TapeType = tapeType;
+    }
+
+    public string TapeType { get; }
 
     public override string Description => TapeType;
 
     public static CassetteTape Create(string tapeType)
     {
-        return new CassetteTape
-        {
-            TapeType = Guard.RequiredText(tapeType, nameof(tapeType), "cassette_tape.type_required")
-        };
+        return new CassetteTape(Guard.RequiredText(tapeType, nameof(tapeType), "cassette_tape.type_required"));
     }
 }

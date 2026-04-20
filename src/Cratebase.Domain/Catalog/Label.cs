@@ -6,16 +6,18 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class Label : IEntity<LabelId>, INamedEntity
 {
-    public required LabelId Id { get; init; }
+    private Label(LabelId id, string name)
+    {
+        Id = id;
+        Name = name;
+    }
 
-    public required string Name { get; init; }
+    public LabelId Id { get; }
+
+    public string Name { get; }
 
     public static Label Create(LabelId id, string name)
     {
-        return new Label
-        {
-            Id = id,
-            Name = Guard.RequiredText(name, nameof(name), "label.name_required")
-        };
+        return new Label(id, Guard.RequiredText(name, nameof(name), "label.name_required"));
     }
 }

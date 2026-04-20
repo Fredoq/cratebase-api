@@ -36,6 +36,29 @@ public sealed class CatalogModelTests
     }
 
     [Fact]
+    public void Track_position_rejects_non_positive_numbers_and_normalizes_markers()
+    {
+        DomainException exception = Assert.Throws<DomainException>(() => TrackPosition.FromNumber(0));
+        var position = TrackPosition.FromNumber(1, " A ", "  ");
+
+        Assert.Equal("track_position.number_required", exception.Code);
+        Assert.Equal("A", position.Disc);
+        Assert.Null(position.Side);
+    }
+
+    [Fact]
+    public void Release_track_normalizes_blank_title_override()
+    {
+        var releaseTrack = ReleaseTrack.Create(
+            ReleaseId.New(),
+            TrackId.New(),
+            TrackPosition.FromNumber(1),
+            "   ");
+
+        Assert.Null(releaseTrack.TitleOverride);
+    }
+
+    [Fact]
     public void Release_rating_is_independent_from_average_track_rating()
     {
         Track firstTrack = Track.Create(TrackId.New(), "Age of Consent").WithRating(Rating.FromValue(10));
@@ -70,6 +93,21 @@ public sealed class CatalogModelTests
         Assert.Equal(1, summary.RatedTrackCount);
         Assert.Null(emptySummary.AverageRating);
         Assert.Equal(0, emptySummary.RatedTrackCount);
+    }
+
+    [Fact]
+    public void Release_track_rating_summary_tolerates_duplicate_track_snapshots()
+    {
+        Track ratedTrack = Track.Create(TrackId.New(), "Ceremony").WithRating(Rating.FromValue(10));
+        Track duplicateSnapshot = Track.Create(ratedTrack.Id, "Ceremony").WithRating(Rating.FromValue(8));
+        var releaseId = ReleaseId.New();
+        Release release = Release.Create(releaseId, "Ceremony")
+            .WithTrack(ReleaseTrack.Create(releaseId, ratedTrack.Id, TrackPosition.FromNumber(1)));
+
+        ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [ratedTrack, duplicateSnapshot]);
+
+        Assert.Equal(10m, summary.AverageRating);
+        Assert.Equal(1, summary.RatedTrackCount);
     }
 
     [Fact]

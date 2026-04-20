@@ -4,21 +4,23 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record OwnershipStatus
 {
-    public required string Code { get; init; }
+    private OwnershipStatus(string code)
+    {
+        Code = code;
+    }
 
-    public static OwnershipStatus Owned => FromCode("owned");
+    public string Code { get; }
 
-    public static OwnershipStatus Wanted => FromCode("wanted");
+    public static OwnershipStatus Owned { get; } = FromCode("owned");
 
-    public static OwnershipStatus Sold => FromCode("sold");
+    public static OwnershipStatus Wanted { get; } = FromCode("wanted");
 
-    public static OwnershipStatus NeedsDigitization => FromCode("needs_digitization");
+    public static OwnershipStatus Sold { get; } = FromCode("sold");
+
+    public static OwnershipStatus NeedsDigitization { get; } = FromCode("needs_digitization");
 
     public static OwnershipStatus FromCode(string code)
     {
-        return new OwnershipStatus
-        {
-            Code = Guard.RequiredText(code, nameof(code), "ownership_status.code_required").ToLowerInvariant()
-        };
+        return new OwnershipStatus(Guard.RequiredText(code, nameof(code), "ownership_status.code_required").ToLowerInvariant());
     }
 }

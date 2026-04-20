@@ -48,6 +48,18 @@ public sealed class RelationTests
             TrackRelationType.VersionOf);
 
         Assert.Equal("track_relation.self_relation", exception.Code);
-        Assert.Equal(TrackRelationType.VersionOf, relation.Type);
+        Assert.Equal(TrackRelationType.VersionOf, relation.RelationType);
+    }
+
+    [Fact]
+    public void Relation_type_codes_are_cached_and_normalized()
+    {
+        var artistRelationType = ArtistRelationType.FromCode(" Alias ");
+        var trackRelationType = TrackRelationType.FromCode(" Remix_Of ");
+
+        Assert.Same(ArtistRelationType.MemberOf, ArtistRelationType.MemberOf);
+        Assert.Same(TrackRelationType.VersionOf, TrackRelationType.VersionOf);
+        Assert.Equal("alias", artistRelationType.Code);
+        Assert.Equal("remix_of", trackRelationType.Code);
     }
 }

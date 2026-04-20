@@ -4,15 +4,17 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record CompactDisc : Medium
 {
-    public required int DiscCount { get; init; }
+    private CompactDisc(int discCount)
+    {
+        DiscCount = discCount;
+    }
+
+    public int DiscCount { get; }
 
     public override string Description => DiscCount == 1 ? "CD" : $"{DiscCount} CDs";
 
     public static CompactDisc Create(int discCount)
     {
-        return new CompactDisc
-        {
-            DiscCount = Guard.Positive(discCount, nameof(discCount), "compact_disc.disc_count_required")
-        };
+        return new CompactDisc(Guard.Positive(discCount, nameof(discCount), "compact_disc.disc_count_required"));
     }
 }

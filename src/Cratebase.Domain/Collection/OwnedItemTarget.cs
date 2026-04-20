@@ -9,9 +9,9 @@ public sealed record OwnedItemTarget
     {
     }
 
-    public ReleaseId? ReleaseId { get; init; }
+    public ReleaseId? ReleaseId { get; private init; }
 
-    public TrackId? TrackId { get; init; }
+    public TrackId? TrackId { get; private init; }
 
     public bool IsRelease => ReleaseId is not null;
 

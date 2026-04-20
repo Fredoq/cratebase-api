@@ -4,21 +4,23 @@ namespace Cratebase.Domain.Credits;
 
 public sealed record CreditRole
 {
-    public required string Code { get; init; }
+    private CreditRole(string code)
+    {
+        Code = code;
+    }
 
-    public static CreditRole MainArtist => FromCode("main_artist");
+    public string Code { get; }
 
-    public static CreditRole FeaturedArtist => FromCode("featured_artist");
+    public static CreditRole MainArtist { get; } = FromCode("main_artist");
 
-    public static CreditRole Remixer => FromCode("remixer");
+    public static CreditRole FeaturedArtist { get; } = FromCode("featured_artist");
 
-    public static CreditRole Producer => FromCode("producer");
+    public static CreditRole Remixer { get; } = FromCode("remixer");
+
+    public static CreditRole Producer { get; } = FromCode("producer");
 
     public static CreditRole FromCode(string code)
     {
-        return new CreditRole
-        {
-            Code = Guard.RequiredText(code, nameof(code), "credit_role.code_required").ToLowerInvariant()
-        };
+        return new CreditRole(Guard.RequiredText(code, nameof(code), "credit_role.code_required").ToLowerInvariant());
     }
 }

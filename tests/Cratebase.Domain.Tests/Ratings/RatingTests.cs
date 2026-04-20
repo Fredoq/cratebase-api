@@ -24,4 +24,14 @@ public sealed class RatingTests
 
         Assert.Equal("rating.out_of_range", exception.Code);
     }
+
+    [Fact]
+    public void Release_track_rating_summary_rejects_invalid_states()
+    {
+        DomainException negativeCount = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(8m, -1));
+        DomainException unratedWithAverage = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(8m, 0));
+
+        Assert.Equal("release_track_rating_summary.count_negative", negativeCount.Code);
+        Assert.Equal("release_track_rating_summary.invalid_state", unratedWithAverage.Code);
+    }
 }

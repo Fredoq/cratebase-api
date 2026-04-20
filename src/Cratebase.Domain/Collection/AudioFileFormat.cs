@@ -4,19 +4,21 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record AudioFileFormat
 {
-    public required string Code { get; init; }
+    private AudioFileFormat(string code)
+    {
+        Code = code;
+    }
 
-    public static AudioFileFormat Flac => FromCode("flac");
+    public string Code { get; }
 
-    public static AudioFileFormat Mp3 => FromCode("mp3");
+    public static AudioFileFormat Flac { get; } = FromCode("flac");
 
-    public static AudioFileFormat Vorbis => FromCode("ogg");
+    public static AudioFileFormat Mp3 { get; } = FromCode("mp3");
+
+    public static AudioFileFormat Ogg { get; } = FromCode("ogg");
 
     public static AudioFileFormat FromCode(string code)
     {
-        return new AudioFileFormat
-        {
-            Code = Guard.RequiredText(code, nameof(code), "audio_file_format.code_required").ToLowerInvariant()
-        };
+        return new AudioFileFormat(Guard.RequiredText(code, nameof(code), "audio_file_format.code_required").ToLowerInvariant());
     }
 }

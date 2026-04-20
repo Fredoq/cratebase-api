@@ -6,19 +6,26 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class Person : IEntity<PersonId>, ICreditContributor
 {
-    public required PersonId Id { get; init; }
+    private Person(PersonId id, ArtistId artistId, string name)
+    {
+        Id = id;
+        ArtistId = artistId;
+        Name = name;
+    }
 
-    public required ArtistId ArtistId { get; init; }
+    public PersonId Id { get; }
 
-    public required string Name { get; init; }
+    public ArtistId ArtistId { get; }
+
+    public string Name { get; }
 
     public static Person Create(PersonId id, string name)
     {
-        return new Person
-        {
-            Id = id,
-            ArtistId = ArtistId.New(),
-            Name = Guard.RequiredText(name, nameof(name), "person.name_required")
-        };
+        return Create(id, ArtistId.New(), name);
+    }
+
+    public static Person Create(PersonId id, ArtistId artistId, string name)
+    {
+        return new Person(id, artistId, Guard.RequiredText(name, nameof(name), "person.name_required"));
     }
 }

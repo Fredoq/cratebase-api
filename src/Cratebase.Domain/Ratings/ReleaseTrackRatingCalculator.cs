@@ -9,7 +9,9 @@ public static class ReleaseTrackRatingCalculator
         ArgumentNullException.ThrowIfNull(release);
         ArgumentNullException.ThrowIfNull(tracks);
 
-        var tracksById = tracks.ToDictionary(track => track.Id);
+        var tracksById = tracks
+            .GroupBy(track => track.Id)
+            .ToDictionary(group => group.Key, group => group.First());
         List<int> ratings = [];
 
         foreach (ReleaseTrack releaseTrack in release.Tracklist)
@@ -21,15 +23,7 @@ public static class ReleaseTrackRatingCalculator
         }
 
         return ratings.Count == 0
-            ? new ReleaseTrackRatingSummary
-            {
-                AverageRating = null,
-                RatedTrackCount = 0
-            }
-            : new ReleaseTrackRatingSummary
-            {
-                AverageRating = decimal.Divide(ratings.Sum(), ratings.Count),
-                RatedTrackCount = ratings.Count
-            };
+            ? ReleaseTrackRatingSummary.Unrated()
+            : ReleaseTrackRatingSummary.FromAverage(decimal.Divide(ratings.Sum(), ratings.Count), ratings.Count);
     }
 }

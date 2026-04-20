@@ -4,13 +4,15 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed record Tag
 {
-    public required string Name { get; init; }
+    private Tag(string name)
+    {
+        Name = name;
+    }
+
+    public string Name { get; }
 
     public static Tag FromName(string name)
     {
-        return new Tag
-        {
-            Name = Guard.RequiredText(name, nameof(name), "tag.name_required")
-        };
+        return new Tag(Guard.RequiredText(name, nameof(name), "tag.name_required"));
     }
 }

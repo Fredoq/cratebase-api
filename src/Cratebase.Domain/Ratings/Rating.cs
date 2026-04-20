@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Errors;
 
 namespace Cratebase.Domain.Ratings;
 
-public readonly record struct Rating
+public sealed record Rating
 {
     private Rating(int value)
     {
