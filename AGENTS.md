@@ -209,8 +209,10 @@ When RabbitMQ is introduced:
 - Public XML documentation is acceptable for public APIs when it clarifies purpose.
 - XML documentation must be brief and in English.
 - Keep README short and focused on repository purpose, setup, test commands, and contribution basics.
-- Store architecture notes and diagrams under `docs/architecture` when they become useful.
+- Store architecture notes and diagrams under `docs/arch` when they become useful.
 - Use Mermaid for diagrams where possible.
+- Keep the domain model diagram at `docs/arch/domain-model.md`.
+- When changing domain entities, value objects, typed IDs, capability interfaces, or domain relationships, update `docs/arch/domain-model.md` in the same pull request.
 
 ## Open Source Process
 
