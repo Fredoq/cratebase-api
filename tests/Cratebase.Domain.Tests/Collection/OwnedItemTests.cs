@@ -91,13 +91,22 @@ public sealed class OwnedItemTests
     }
 
     [Fact]
-    public void Audio_file_format_uses_cached_normalized_file_format_codes()
+    public void Audio_file_format_normalizes_codes_to_lowercase_and_trims_input()
     {
         var custom = AudioFileFormat.FromCode(" WAV ");
 
-        Assert.Same(AudioFileFormat.Flac, AudioFileFormat.Flac);
         Assert.Equal("ogg", AudioFileFormat.Ogg.Code);
         Assert.Equal("wav", custom.Code);
+    }
+
+    [Fact]
+    public void File_path_accepts_unix_and_windows_absolute_paths()
+    {
+        var unixPath = FilePath.FromAbsolutePath("/music/New Order/Blue Monday.flac");
+        var windowsPath = FilePath.FromAbsolutePath(@"C:\music\New Order\Blue Monday.flac");
+
+        Assert.Equal("/music/New Order/Blue Monday.flac", unixPath.Value);
+        Assert.Equal(@"C:\music\New Order\Blue Monday.flac", windowsPath.Value);
     }
 
     [Fact]
