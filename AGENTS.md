@@ -186,7 +186,9 @@ When RabbitMQ is introduced:
 ## C# Design Rules
 
 - Classes and records should be `sealed` by default.
+- Put exactly one top-level type in each `.cs` file. This applies to classes, records, structs, interfaces, and enums. Name the file after that type.
 - Prefer immutability for value objects and contracts.
+- Use `Guid.CreateVersion7()` for newly generated GUID values, including typed IDs. Do not use `Guid.NewGuid()` for domain identifiers.
 - Use `class` for objects with identity, lifecycle, or behavior-heavy invariants.
 - Use `record` or `record struct` only when value semantics are intentional.
 - Do not use primary constructors for classes or records unless the repository explicitly adopts them later.
@@ -207,8 +209,10 @@ When RabbitMQ is introduced:
 - Public XML documentation is acceptable for public APIs when it clarifies purpose.
 - XML documentation must be brief and in English.
 - Keep README short and focused on repository purpose, setup, test commands, and contribution basics.
-- Store architecture notes and diagrams under `docs/architecture` when they become useful.
+- Store architecture notes and diagrams under `docs/arch` when they become useful.
 - Use Mermaid for diagrams where possible.
+- Keep the domain model diagram at `docs/arch/domain-model.md`.
+- When changing domain entities, value objects, typed IDs, capability interfaces, or domain relationships, update `docs/arch/domain-model.md` in the same pull request.
 
 ## Open Source Process
 
