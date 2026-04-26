@@ -4,15 +4,12 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class ReleaseTrack
 {
-    private ReleaseTrack(ReleaseId releaseId, TrackId trackId, TrackPosition position, string? titleOverride)
+    private ReleaseTrack(TrackId trackId, TrackPosition position, string? titleOverride)
     {
-        ReleaseId = releaseId;
         TrackId = trackId;
         Position = position;
         TitleOverride = titleOverride;
     }
-
-    public ReleaseId ReleaseId { get; }
 
     public TrackId TrackId { get; }
 
@@ -20,17 +17,16 @@ public sealed class ReleaseTrack
 
     public string? TitleOverride { get; }
 
-    public static ReleaseTrack Create(ReleaseId releaseId, TrackId trackId, TrackPosition position)
+    public static ReleaseTrack Create(TrackId trackId, TrackPosition position)
     {
-        return Create(releaseId, trackId, position, null);
+        return Create(trackId, position, null);
     }
 
-    public static ReleaseTrack Create(ReleaseId releaseId, TrackId trackId, TrackPosition position, string? titleOverride)
+    public static ReleaseTrack Create(TrackId trackId, TrackPosition position, string? titleOverride)
     {
         ArgumentNullException.ThrowIfNull(position);
 
         return new ReleaseTrack(
-            releaseId,
             trackId,
             position,
             string.IsNullOrWhiteSpace(titleOverride) ? null : titleOverride.Trim());

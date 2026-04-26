@@ -6,15 +6,29 @@ namespace Cratebase.Domain.Relations;
 
 public sealed class ArtistRelation : IEntity<ArtistRelationId>
 {
-    public required ArtistRelationId Id { get; init; }
+    private ArtistRelation(
+        ArtistRelationId id,
+        ArtistId sourceArtistId,
+        ArtistId targetArtistId,
+        ArtistRelationType type,
+        ArtistRelationPeriod? period)
+    {
+        Id = id;
+        SourceArtistId = sourceArtistId;
+        TargetArtistId = targetArtistId;
+        Type = type;
+        Period = period;
+    }
 
-    public required ArtistId SourceArtistId { get; init; }
+    public ArtistRelationId Id { get; }
 
-    public required ArtistId TargetArtistId { get; init; }
+    public ArtistId SourceArtistId { get; }
 
-    public required ArtistRelationType Type { get; init; }
+    public ArtistId TargetArtistId { get; }
 
-    public ArtistRelationPeriod? Period { get; init; }
+    public ArtistRelationType Type { get; }
+
+    public ArtistRelationPeriod? Period { get; }
 
     public static ArtistRelation Create(
         ArtistRelationId id,
@@ -27,13 +41,6 @@ public sealed class ArtistRelation : IEntity<ArtistRelationId>
 
         return sourceArtistId == targetArtistId
             ? throw new DomainException("artist_relation.self_relation", "Artist relation cannot reference the same artist twice")
-            : new ArtistRelation
-            {
-                Id = id,
-                SourceArtistId = sourceArtistId,
-                TargetArtistId = targetArtistId,
-                Type = type,
-                Period = period
-            };
+            : new ArtistRelation(id, sourceArtistId, targetArtistId, type, period);
     }
 }

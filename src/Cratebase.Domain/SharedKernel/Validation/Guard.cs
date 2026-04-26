@@ -17,4 +17,18 @@ internal static class Guard
             ? throw new DomainException(code, $"{fieldName} must be positive")
             : value;
     }
+
+    public static long Positive(long value, string fieldName, string code)
+    {
+        return value <= 0
+            ? throw new DomainException(code, $"{fieldName} must be positive")
+            : value;
+    }
+
+    public static TimeSpan Positive(TimeSpan value, string fieldName, string code)
+    {
+        return value <= TimeSpan.Zero
+            ? throw new DomainException(code, $"{fieldName} must be positive")
+            : value;
+    }
 }

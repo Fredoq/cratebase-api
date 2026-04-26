@@ -1,14 +1,7 @@
 namespace Cratebase.Domain.SharedKernel.Ids;
 
-public readonly record struct CreditId
+public readonly record struct CreditId(Guid Value)
 {
-    public CreditId(Guid value)
-    {
-        Value = value;
-    }
-
-    public Guid Value { get; }
-
     public static CreditId New()
     {
         return new CreditId(Guid.CreateVersion7());

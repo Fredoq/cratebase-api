@@ -8,111 +8,210 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class Release : IEntity<ReleaseId>, ICreditTarget
 {
-    public required ReleaseId Id { get; init; }
+    private Release(ReleaseState state)
+    {
+        Id = state.Id;
+        Title = state.Title;
+        Type = state.Type;
+        LabelId = state.LabelId;
+        Year = state.Year;
+        ReleaseDate = state.ReleaseDate;
+        CoverImage = state.CoverImage;
+        Rating = state.Rating;
+        Tracklist = state.Tracklist;
+        Genres = state.Genres;
+        Tags = state.Tags;
+    }
 
-    public required string Title { get; init; }
+    public ReleaseId Id { get; }
+
+    public string Title { get; }
 
     public string Name => Title;
 
     public string DisplayName => Title;
 
-    public LabelId? LabelId { get; init; }
+    public ReleaseType Type { get; }
 
-    public int? Year { get; init; }
+    public LabelId? LabelId { get; }
 
-    public DateOnly? ReleaseDate { get; init; }
+    public int? Year { get; }
 
-    public Rating? Rating { get; init; }
+    public DateOnly? ReleaseDate { get; }
 
-    public IReadOnlyList<ReleaseTrack> Tracklist { get; init; } = [];
+    public CoverImage? CoverImage { get; }
 
-    public IReadOnlyList<Genre> Genres { get; init; } = [];
+    public Rating? Rating { get; }
 
-    public IReadOnlyList<Tag> Tags { get; init; } = [];
+    public IReadOnlyList<ReleaseTrack> Tracklist { get; }
+
+    public IReadOnlyList<Genre> Genres { get; }
+
+    public IReadOnlyList<Tag> Tags { get; }
 
     public static Release Create(ReleaseId id, string title)
     {
-        return new Release
+        return new Release(new ReleaseState
         {
             Id = id,
-            Title = Guard.RequiredText(title, nameof(title), "release.title_required")
-        };
+            Title = Guard.RequiredText(title, nameof(title), "release.title_required"),
+            Type = ReleaseType.Unknown,
+            LabelId = null,
+            Year = null,
+            ReleaseDate = null,
+            CoverImage = null,
+            Rating = null,
+            Tracklist = [],
+            Genres = [],
+            Tags = []
+        });
     }
 
     public Release WithRating(Rating rating)
     {
-        Release release = Copy();
+        ArgumentNullException.ThrowIfNull(rating);
 
-        return new Release
+        return Copy(state => state with
         {
-            Id = release.Id,
-            Title = release.Title,
-            LabelId = release.LabelId,
-            Year = release.Year,
-            ReleaseDate = release.ReleaseDate,
-            Rating = rating,
-            Tracklist = release.Tracklist,
-            Genres = release.Genres,
-            Tags = release.Tags
-        };
+            Rating = rating
+        });
     }
 
     public Release WithTrack(ReleaseTrack releaseTrack)
     {
         ArgumentNullException.ThrowIfNull(releaseTrack);
 
-        if (releaseTrack.ReleaseId != Id)
-        {
-            throw new DomainException("release_track.release_mismatch", "Release track must belong to the release");
-        }
+        EnsureTrackPositionIsUnique(releaseTrack.Position);
 
-        Release release = Copy();
-
-        return new Release
+        return Copy(state => state with
         {
-            Id = release.Id,
-            Title = release.Title,
-            LabelId = release.LabelId,
-            Year = release.Year,
-            ReleaseDate = release.ReleaseDate,
-            Rating = release.Rating,
-            Tracklist = [.. release.Tracklist, releaseTrack],
-            Genres = release.Genres,
-            Tags = release.Tags
-        };
+            Tracklist = [.. Tracklist, releaseTrack]
+        });
     }
 
     public Release WithLabel(LabelId labelId)
     {
-        Release release = Copy();
-
-        return new Release
+        return Copy(state => state with
         {
-            Id = release.Id,
-            Title = release.Title,
-            LabelId = labelId,
-            Year = release.Year,
-            ReleaseDate = release.ReleaseDate,
-            Rating = release.Rating,
-            Tracklist = release.Tracklist,
-            Genres = release.Genres,
-            Tags = release.Tags
-        };
+            LabelId = labelId
+        });
     }
 
-    private Release Copy()
+    public Release WithType(ReleaseType type)
     {
-        return new Release
+        ArgumentNullException.ThrowIfNull(type);
+
+        return Copy(state => state with
+        {
+            Type = type
+        });
+    }
+
+    public Release WithReleaseYear(int year)
+    {
+        return Copy(state => state with
+        {
+            Year = Guard.Positive(year, nameof(year), "release.year_required")
+        });
+    }
+
+    public Release WithReleaseDate(DateOnly releaseDate)
+    {
+        return Copy(state => state with
+        {
+            ReleaseDate = releaseDate
+        });
+    }
+
+    public Release WithCoverImage(CoverImage coverImage)
+    {
+        ArgumentNullException.ThrowIfNull(coverImage);
+
+        return Copy(state => state with
+        {
+            CoverImage = coverImage
+        });
+    }
+
+    public Release WithGenre(Genre genre)
+    {
+        ArgumentNullException.ThrowIfNull(genre);
+
+        return Genres.Contains(genre)
+            ? this
+            : Copy(state => state with
+            {
+                Genres = [.. Genres, genre]
+            });
+    }
+
+    public Release WithTag(Tag tag)
+    {
+        ArgumentNullException.ThrowIfNull(tag);
+
+        return Tags.Contains(tag)
+            ? this
+            : Copy(state => state with
+            {
+                Tags = [.. Tags, tag]
+            });
+    }
+
+    private Release Copy(Func<ReleaseState, ReleaseState> update)
+    {
+        ArgumentNullException.ThrowIfNull(update);
+
+        return new Release(update(ToState()));
+    }
+
+    private void EnsureTrackPositionIsUnique(TrackPosition position)
+    {
+        if (Tracklist.Any(existing => existing.Position == position))
+        {
+            throw new DomainException("release_track.position_duplicate", "Release track position already exists");
+        }
+    }
+
+    private ReleaseState ToState()
+    {
+        return new ReleaseState
         {
             Id = Id,
             Title = Title,
+            Type = Type,
             LabelId = LabelId,
             Year = Year,
             ReleaseDate = ReleaseDate,
+            CoverImage = CoverImage,
             Rating = Rating,
             Tracklist = [.. Tracklist],
             Genres = [.. Genres],
             Tags = [.. Tags]
         };
+    }
+
+    private sealed record ReleaseState
+    {
+        public required ReleaseId Id { get; init; }
+
+        public required string Title { get; init; }
+
+        public required ReleaseType Type { get; init; }
+
+        public LabelId? LabelId { get; init; }
+
+        public int? Year { get; init; }
+
+        public DateOnly? ReleaseDate { get; init; }
+
+        public CoverImage? CoverImage { get; init; }
+
+        public Rating? Rating { get; init; }
+
+        public required IReadOnlyList<ReleaseTrack> Tracklist { get; init; }
+
+        public required IReadOnlyList<Genre> Genres { get; init; }
+
+        public required IReadOnlyList<Tag> Tags { get; init; }
     }
 }

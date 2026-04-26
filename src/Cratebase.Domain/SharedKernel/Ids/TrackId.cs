@@ -1,14 +1,7 @@
 namespace Cratebase.Domain.SharedKernel.Ids;
 
-public readonly record struct TrackId
+public readonly record struct TrackId(Guid Value)
 {
-    public TrackId(Guid value)
-    {
-        Value = value;
-    }
-
-    public Guid Value { get; }
-
     public static TrackId New()
     {
         return new TrackId(Guid.CreateVersion7());

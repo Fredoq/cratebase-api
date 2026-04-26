@@ -18,15 +18,6 @@ classDiagram
             string Name
         }
 
-        class IArtist {
-            <<interface>>
-            ArtistId ArtistId
-        }
-
-        class ICreditContributor {
-            <<interface>>
-        }
-
         class ICreditTarget {
             <<interface>>
         }
@@ -34,14 +25,6 @@ classDiagram
         class DomainException
 
         class ArtistId {
-            Guid Value
-        }
-
-        class PersonId {
-            Guid Value
-        }
-
-        class GroupId {
             Guid Value
         }
 
@@ -75,16 +58,16 @@ classDiagram
     }
 
     namespace Catalog {
-        class Person {
-            PersonId Id
-            ArtistId ArtistId
+        class Artist {
+            <<abstract>>
+            ArtistId Id
             string Name
         }
 
+        class Person {
+        }
+
         class Group {
-            GroupId Id
-            ArtistId ArtistId
-            string Name
         }
 
         class Label {
@@ -95,9 +78,11 @@ classDiagram
         class Release {
             ReleaseId Id
             string Title
+            ReleaseType Type
             LabelId? LabelId
             int? Year
             DateOnly? ReleaseDate
+            CoverImage? CoverImage
             Rating? Rating
             ReleaseTrack[] Tracklist
             Genre[] Genres
@@ -114,7 +99,6 @@ classDiagram
         }
 
         class ReleaseTrack {
-            ReleaseId ReleaseId
             TrackId TrackId
             TrackPosition Position
             string? TitleOverride
@@ -124,6 +108,14 @@ classDiagram
             int Number
             string? Disc
             string? Side
+        }
+
+        class ReleaseType {
+            string Code
+        }
+
+        class CoverImage {
+            string Path
         }
 
         class Genre {
@@ -141,8 +133,8 @@ classDiagram
             OwnedItemTarget Target
             OwnershipStatus Status
             IMedium Medium
-            string? Condition
-            string? StorageLocation
+            ItemCondition? Condition
+            StorageLocation? StorageLocation
         }
 
         class OwnedItemTarget {
@@ -158,6 +150,7 @@ classDiagram
         class DigitalFile {
             FilePath Path
             AudioFileFormat Format
+            FileImportIdentity? ImportIdentity
         }
 
         class VinylRecord {
@@ -180,12 +173,27 @@ classDiagram
             string Value
         }
 
+        class FileImportIdentity {
+            FilePath Path
+            long SizeBytes
+            DateTimeOffset LastModifiedAt
+            string? ContentHash
+        }
+
         class AudioFileFormat {
             string Code
         }
 
         class OwnershipStatus {
             string Code
+        }
+
+        class ItemCondition {
+            string Description
+        }
+
+        class StorageLocation {
+            string Name
         }
     }
 
@@ -257,8 +265,7 @@ classDiagram
         }
     }
 
-    IEntity~PersonId~ <|.. Person
-    IEntity~GroupId~ <|.. Group
+    IEntity~ArtistId~ <|.. Artist
     IEntity~LabelId~ <|.. Label
     IEntity~ReleaseId~ <|.. Release
     IEntity~TrackId~ <|.. Track
@@ -267,26 +274,23 @@ classDiagram
     IEntity~ArtistRelationId~ <|.. ArtistRelation
     IEntity~TrackRelationId~ <|.. TrackRelation
 
-    INamedEntity <|.. IArtist
-    IArtist <|.. ICreditContributor
-    ICreditContributor <|.. Person
-    ICreditContributor <|.. Group
+    INamedEntity <|.. Artist
+    Artist <|-- Person
+    Artist <|-- Group
     ICreditTarget <|.. Release
     ICreditTarget <|.. Track
 
-    Person --> PersonId
-    Person --> ArtistId
-    Group --> GroupId
-    Group --> ArtistId
+    Artist --> ArtistId
     Label --> LabelId
 
     Release --> ReleaseId
+    Release *-- ReleaseType
     Release --> LabelId : optional label
+    Release o-- CoverImage
     Release *-- ReleaseTrack : tracklist
     Release o-- Rating : own rating
     Release o-- Genre
     Release o-- Tag
-    ReleaseTrack --> ReleaseId
     ReleaseTrack --> TrackId
     ReleaseTrack *-- TrackPosition
 
@@ -299,6 +303,8 @@ classDiagram
     OwnedItem *-- OwnedItemTarget
     OwnedItem *-- OwnershipStatus
     OwnedItem *-- IMedium
+    OwnedItem o-- ItemCondition
+    OwnedItem o-- StorageLocation
     OwnedItemTarget --> ReleaseId : release target
     OwnedItemTarget --> TrackId : track target
     IMedium <|.. DigitalFile
@@ -308,6 +314,8 @@ classDiagram
     IMedium <|.. OtherMedium
     DigitalFile *-- FilePath
     DigitalFile *-- AudioFileFormat
+    DigitalFile o-- FileImportIdentity
+    FileImportIdentity --> FilePath
 
     Credit --> CreditId
     Credit *-- CreditContributor
@@ -340,4 +348,5 @@ classDiagram
 - Credits describe artist contributions to releases or tracks.
 - Relations describe artist-to-artist and track-to-track graph edges.
 - Ratings are independent for releases and tracks; release track averages are calculated, not stored.
+- Digital file import identity supports idempotent local audio folder imports.
 - SharedKernel contains typed identifiers, capability interfaces, validation support, and domain exceptions.

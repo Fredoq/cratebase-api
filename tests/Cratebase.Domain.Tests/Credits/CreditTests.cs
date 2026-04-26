@@ -10,8 +10,8 @@ public sealed class CreditTests
     [Fact]
     public void Credit_links_an_artist_contributor_to_a_release_or_track_target_through_a_role()
     {
-        var person = Person.Create(PersonId.New(), "Arthur Baker");
-        var group = Group.Create(GroupId.New(), "New Order");
+        var person = Person.Create(ArtistId.New(), "Arthur Baker");
+        var group = Group.Create(ArtistId.New(), "New Order");
         var releaseId = ReleaseId.New();
         var trackId = TrackId.New();
         var releaseCredit = Credit.Create(
@@ -28,11 +28,11 @@ public sealed class CreditTests
         Assert.True(releaseCredit.Target.IsRelease);
         Assert.Equal(releaseId, releaseCredit.Target.ReleaseId);
         Assert.Null(releaseCredit.Target.TrackId);
-        Assert.Equal(group.ArtistId, releaseCredit.Contributor.ArtistId);
+        Assert.Equal(group.Id, releaseCredit.Contributor.ArtistId);
         Assert.True(trackCredit.Target.IsTrack);
         Assert.Equal(trackId, trackCredit.Target.TrackId);
         Assert.Null(trackCredit.Target.ReleaseId);
-        Assert.Equal(person.ArtistId, trackCredit.Contributor.ArtistId);
+        Assert.Equal(person.Id, trackCredit.Contributor.ArtistId);
         Assert.Equal(CreditRole.Producer, trackCredit.Role);
     }
 

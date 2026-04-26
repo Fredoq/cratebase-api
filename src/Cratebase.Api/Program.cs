@@ -1,3 +1,4 @@
+using Cratebase.Api;
 using Cratebase.Application;
 using Cratebase.Infrastructure;
 
@@ -20,13 +21,11 @@ app.MapGet("/health", () =>
 })
 .WithName("GetHealth");
 
-app.Run();
+await app.RunAsync();
 
-public partial class Program;
-
-internal sealed class HealthResponse
+public partial class Program
 {
-    public required string Service { get; init; }
-
-    public required string Status { get; init; }
+    protected Program()
+    {
+    }
 }

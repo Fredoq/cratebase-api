@@ -7,41 +7,87 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class Track : IEntity<TrackId>, ICreditTarget
 {
-    public required TrackId Id { get; init; }
+    private Track(
+        TrackId id,
+        string title,
+        TimeSpan? duration,
+        Rating? rating,
+        IReadOnlyList<Genre> genres,
+        IReadOnlyList<Tag> tags)
+    {
+        Id = id;
+        Title = title;
+        Duration = duration;
+        Rating = rating;
+        Genres = genres;
+        Tags = tags;
+    }
 
-    public required string Title { get; init; }
+    public TrackId Id { get; }
+
+    public string Title { get; }
 
     public string Name => Title;
 
     public string DisplayName => Title;
 
-    public TimeSpan? Duration { get; init; }
+    public TimeSpan? Duration { get; }
 
-    public Rating? Rating { get; init; }
+    public Rating? Rating { get; }
 
-    public IReadOnlyList<Genre> Genres { get; init; } = [];
+    public IReadOnlyList<Genre> Genres { get; }
 
-    public IReadOnlyList<Tag> Tags { get; init; } = [];
+    public IReadOnlyList<Tag> Tags { get; }
 
     public static Track Create(TrackId id, string title)
     {
-        return new Track
-        {
-            Id = id,
-            Title = Guard.RequiredText(title, nameof(title), "track.title_required")
-        };
+        return new Track(
+            id,
+            Guard.RequiredText(title, nameof(title), "track.title_required"),
+            null,
+            null,
+            [],
+            []);
+    }
+
+    public Track WithDuration(TimeSpan duration)
+    {
+        return Copy(duration: Guard.Positive(duration, nameof(duration), "track.duration_required"));
     }
 
     public Track WithRating(Rating rating)
     {
-        return new Track
-        {
-            Id = Id,
-            Title = Title,
-            Duration = Duration,
-            Rating = rating,
-            Genres = [.. Genres],
-            Tags = [.. Tags]
-        };
+        ArgumentNullException.ThrowIfNull(rating);
+
+        return Copy(rating: rating);
+    }
+
+    public Track WithGenre(Genre genre)
+    {
+        ArgumentNullException.ThrowIfNull(genre);
+
+        return Genres.Contains(genre) ? this : Copy(genres: [.. Genres, genre]);
+    }
+
+    public Track WithTag(Tag tag)
+    {
+        ArgumentNullException.ThrowIfNull(tag);
+
+        return Tags.Contains(tag) ? this : Copy(tags: [.. Tags, tag]);
+    }
+
+    private Track Copy(
+        TimeSpan? duration = null,
+        Rating? rating = null,
+        IReadOnlyList<Genre>? genres = null,
+        IReadOnlyList<Tag>? tags = null)
+    {
+        return new Track(
+            Id,
+            Title,
+            duration ?? Duration,
+            rating ?? Rating,
+            genres ?? [.. Genres],
+            tags ?? [.. Tags]);
     }
 }

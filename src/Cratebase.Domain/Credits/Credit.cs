@@ -5,13 +5,21 @@ namespace Cratebase.Domain.Credits;
 
 public sealed class Credit : IEntity<CreditId>
 {
-    public required CreditId Id { get; init; }
+    private Credit(CreditId id, CreditContributor contributor, CreditTarget target, CreditRole role)
+    {
+        Id = id;
+        Contributor = contributor;
+        Target = target;
+        Role = role;
+    }
 
-    public required CreditContributor Contributor { get; init; }
+    public CreditId Id { get; }
 
-    public required CreditTarget Target { get; init; }
+    public CreditContributor Contributor { get; }
 
-    public required CreditRole Role { get; init; }
+    public CreditTarget Target { get; }
+
+    public CreditRole Role { get; }
 
     public static Credit Create(CreditId id, CreditContributor contributor, CreditTarget target, CreditRole role)
     {
@@ -19,12 +27,6 @@ public sealed class Credit : IEntity<CreditId>
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(role);
 
-        return new Credit
-        {
-            Id = id,
-            Contributor = contributor,
-            Target = target,
-            Role = role
-        };
+        return new Credit(id, contributor, target, role);
     }
 }

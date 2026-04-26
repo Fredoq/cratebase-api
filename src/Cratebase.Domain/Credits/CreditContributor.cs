@@ -1,5 +1,5 @@
+using Cratebase.Domain.Catalog;
 using Cratebase.Domain.SharedKernel.Ids;
-using Cratebase.Domain.SharedKernel.Interfaces;
 using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Credits;
@@ -16,10 +16,10 @@ public sealed record CreditContributor
 
     public string Name { get; }
 
-    public static CreditContributor FromArtist(IArtist artist)
+    public static CreditContributor FromArtist(Artist artist)
     {
         ArgumentNullException.ThrowIfNull(artist);
 
-        return new CreditContributor(artist.ArtistId, artist.Name);
+        return new CreditContributor(artist.Id, artist.Name);
     }
 }

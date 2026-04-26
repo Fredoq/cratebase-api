@@ -1,14 +1,7 @@
 namespace Cratebase.Domain.SharedKernel.Ids;
 
-public readonly record struct ArtistId
+public readonly record struct ArtistId(Guid Value)
 {
-    public ArtistId(Guid value)
-    {
-        Value = value;
-    }
-
-    public Guid Value { get; }
-
     public static ArtistId New()
     {
         return new ArtistId(Guid.CreateVersion7());
