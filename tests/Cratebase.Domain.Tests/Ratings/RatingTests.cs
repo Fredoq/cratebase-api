@@ -30,8 +30,12 @@ public sealed class RatingTests
     {
         DomainException negativeCount = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(8m, -1));
         DomainException unratedWithAverage = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(8m, 0));
+        DomainException lowAverage = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(0m, 1));
+        DomainException highAverage = Assert.Throws<DomainException>(() => ReleaseTrackRatingSummary.FromAverage(11m, 1));
 
         Assert.Equal("release_track_rating_summary.count_negative", negativeCount.Code);
         Assert.Equal("release_track_rating_summary.invalid_state", unratedWithAverage.Code);
+        Assert.Equal("release_track_rating_summary.average_out_of_range", lowAverage.Code);
+        Assert.Equal("release_track_rating_summary.average_out_of_range", highAverage.Code);
     }
 }

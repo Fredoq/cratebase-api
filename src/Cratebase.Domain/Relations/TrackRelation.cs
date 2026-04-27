@@ -32,8 +32,6 @@ public sealed class TrackRelation : IEntity<TrackRelationId>
         TrackId targetTrackId,
         TrackRelationType type)
     {
-        ArgumentNullException.ThrowIfNull(type);
-
         return sourceTrackId == targetTrackId
             ? throw new DomainException("track_relation.self_relation", "Track relation cannot reference the same track twice")
             : new TrackRelation(id, sourceTrackId, targetTrackId, type);

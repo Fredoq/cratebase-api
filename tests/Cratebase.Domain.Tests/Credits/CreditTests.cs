@@ -10,8 +10,8 @@ public sealed class CreditTests
     [Fact]
     public void Credit_links_an_artist_contributor_to_a_release_or_track_target_through_a_role()
     {
-        var person = Person.Create(PersonId.New(), "Arthur Baker");
-        var group = Group.Create(GroupId.New(), "New Order");
+        var person = Person.Create(ArtistId.New(), "Arthur Baker");
+        var group = Group.Create(ArtistId.New(), "New Order");
         var releaseId = ReleaseId.New();
         var trackId = TrackId.New();
         var releaseCredit = Credit.Create(
@@ -26,34 +26,41 @@ public sealed class CreditTests
             CreditRole.Producer);
 
         Assert.True(releaseCredit.Target.IsRelease);
-        Assert.Equal(releaseId, releaseCredit.Target.ReleaseId);
-        Assert.Null(releaseCredit.Target.TrackId);
-        Assert.Equal(group.ArtistId, releaseCredit.Contributor.ArtistId);
+        Assert.Equal(releaseId, Assert.IsType<ReleaseCreditTarget>(releaseCredit.Target).ReleaseId);
+        Assert.Equal(group.Id, releaseCredit.Contributor.ArtistId);
         Assert.True(trackCredit.Target.IsTrack);
-        Assert.Equal(trackId, trackCredit.Target.TrackId);
-        Assert.Null(trackCredit.Target.ReleaseId);
-        Assert.Equal(person.ArtistId, trackCredit.Contributor.ArtistId);
+        Assert.Equal(trackId, Assert.IsType<TrackCreditTarget>(trackCredit.Target).TrackId);
+        Assert.Equal(person.Id, trackCredit.Contributor.ArtistId);
         Assert.Equal(CreditRole.Producer, trackCredit.Role);
     }
 
     [Fact]
-    public void Credit_target_rejects_ambiguous_and_empty_targets()
+    public void Credit_targets_use_distinct_types_for_release_and_track_references()
     {
-        DomainException ambiguous = Assert.Throws<DomainException>(
-            () => CreditTarget.Create(ReleaseId.New(), TrackId.New()));
-        DomainException empty = Assert.Throws<DomainException>(
-            () => CreditTarget.Create(null, null));
+        var releaseTarget = CreditTarget.ForRelease(ReleaseId.New());
+        var trackTarget = CreditTarget.ForTrack(TrackId.New());
 
-        Assert.Equal("credit_target.ambiguous", ambiguous.Code);
-        Assert.Equal("credit_target.empty", empty.Code);
+        _ = Assert.IsType<ReleaseCreditTarget>(releaseTarget);
+        _ = Assert.IsType<TrackCreditTarget>(trackTarget);
     }
 
     [Fact]
-    public void Credit_roles_are_cached_and_normalized()
+    public void Credit_roles_are_a_closed_object_catalog()
     {
-        var custom = CreditRole.FromCode(" Composer ");
+        Assert.Equal(CreditRole.Producer, CreditRole.Producer);
+        Assert.NotEqual(CreditRole.Producer, CreditRole.Composer);
+    }
 
-        Assert.Same(CreditRole.Producer, CreditRole.Producer);
-        Assert.Equal("composer", custom.Code);
+    [Fact]
+    public void Credit_rejects_undefined_roles()
+    {
+        DomainException exception = Assert.Throws<DomainException>(() =>
+            Credit.Create(
+                CreditId.New(),
+                CreditContributor.FromArtist(Person.Create(ArtistId.New(), "Arthur Baker")),
+                CreditTarget.ForRelease(ReleaseId.New()),
+                default));
+
+        Assert.Equal("credit.role_invalid", exception.Code);
     }
 }

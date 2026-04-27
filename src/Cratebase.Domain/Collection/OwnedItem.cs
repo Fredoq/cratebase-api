@@ -5,30 +5,41 @@ namespace Cratebase.Domain.Collection;
 
 public sealed class OwnedItem : IEntity<OwnedItemId>
 {
-    public required OwnedItemId Id { get; init; }
+    private OwnedItem(
+        OwnedItemId id,
+        OwnedItemTarget target,
+        OwnedItemHolding holding)
+    {
+        Id = id;
+        Target = target;
+        Holding = holding;
+    }
 
-    public required OwnedItemTarget Target { get; init; }
+    public OwnedItemId Id { get; }
 
-    public required OwnershipStatus Status { get; init; }
+    public OwnedItemTarget Target { get; }
 
-    public required IMedium Medium { get; init; }
-
-    public string? Condition { get; init; }
-
-    public string? StorageLocation { get; init; }
+    public OwnedItemHolding Holding { get; }
 
     public static OwnedItem Create(OwnedItemId id, OwnedItemTarget target, OwnershipStatus status, IMedium medium)
     {
         ArgumentNullException.ThrowIfNull(target);
-        ArgumentNullException.ThrowIfNull(status);
-        ArgumentNullException.ThrowIfNull(medium);
 
-        return new OwnedItem
-        {
-            Id = id,
-            Target = target,
-            Status = status,
-            Medium = medium
-        };
+        return new OwnedItem(id, target, OwnedItemHolding.Create(status, medium));
+    }
+
+    public OwnedItem WithStatus(OwnershipStatus status)
+    {
+        return new OwnedItem(Id, Target, Holding.WithStatus(status));
+    }
+
+    public OwnedItem WithCondition(ItemCondition condition)
+    {
+        return new OwnedItem(Id, Target, Holding.WithDetails(Holding.Details.WithCondition(condition)));
+    }
+
+    public OwnedItem WithStorageLocation(StorageLocation storageLocation)
+    {
+        return new OwnedItem(Id, Target, Holding.WithDetails(Holding.Details.WithStorageLocation(storageLocation)));
     }
 }

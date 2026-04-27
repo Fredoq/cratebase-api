@@ -1,14 +1,7 @@
 namespace Cratebase.Domain.SharedKernel.Ids;
 
-public readonly record struct OwnedItemId
+public readonly record struct OwnedItemId(Guid Value)
 {
-    public OwnedItemId(Guid value)
-    {
-        Value = value;
-    }
-
-    public Guid Value { get; }
-
     public static OwnedItemId New()
     {
         return new OwnedItemId(Guid.CreateVersion7());

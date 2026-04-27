@@ -7,41 +7,58 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class Track : IEntity<TrackId>, ICreditTarget
 {
-    public required TrackId Id { get; init; }
+    private Track(
+        TrackId id,
+        string title,
+        TrackDetails details,
+        Cataloging cataloging)
+    {
+        Id = id;
+        Title = title;
+        Details = details;
+        Cataloging = cataloging;
+    }
 
-    public required string Title { get; init; }
+    public TrackId Id { get; }
 
-    public string Name => Title;
+    public string Title { get; }
 
     public string DisplayName => Title;
 
-    public TimeSpan? Duration { get; init; }
+    public TrackDetails Details { get; }
 
-    public Rating? Rating { get; init; }
-
-    public IReadOnlyList<Genre> Genres { get; init; } = [];
-
-    public IReadOnlyList<Tag> Tags { get; init; } = [];
+    public Cataloging Cataloging { get; }
 
     public static Track Create(TrackId id, string title)
     {
-        return new Track
-        {
-            Id = id,
-            Title = Guard.RequiredText(title, nameof(title), "track.title_required")
-        };
+        return new Track(
+            id,
+            Guard.RequiredText(title, nameof(title), "track.title_required"),
+            TrackDetails.Empty,
+            Cataloging.Empty);
+    }
+
+    public Track WithDetails(TrackDetails details)
+    {
+        ArgumentNullException.ThrowIfNull(details);
+
+        return new Track(Id, Title, details, Cataloging);
+    }
+
+    public Track WithDuration(TimeSpan duration)
+    {
+        return WithDetails(Details.WithDuration(duration));
     }
 
     public Track WithRating(Rating rating)
     {
-        return new Track
-        {
-            Id = Id,
-            Title = Title,
-            Duration = Duration,
-            Rating = rating,
-            Genres = [.. Genres],
-            Tags = [.. Tags]
-        };
+        return WithDetails(Details.WithRating(rating));
+    }
+
+    public Track WithCataloging(Cataloging cataloging)
+    {
+        ArgumentNullException.ThrowIfNull(cataloging);
+
+        return new Track(Id, Title, Details, cataloging);
     }
 }

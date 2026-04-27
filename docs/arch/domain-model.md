@@ -9,6 +9,18 @@ classDiagram
     direction LR
 
     namespace SharedKernel {
+        class OptionalValue~T~ {
+            <<abstract>>
+            bool HasValue
+        }
+
+        class PresentOptionalValue~T~ {
+            T Value
+        }
+
+        class MissingOptionalValue~T~ {
+        }
+
         class IEntity~TId~ {
             <<interface>>
         }
@@ -18,15 +30,6 @@ classDiagram
             string Name
         }
 
-        class IArtist {
-            <<interface>>
-            ArtistId ArtistId
-        }
-
-        class ICreditContributor {
-            <<interface>>
-        }
-
         class ICreditTarget {
             <<interface>>
         }
@@ -34,14 +37,6 @@ classDiagram
         class DomainException
 
         class ArtistId {
-            Guid Value
-        }
-
-        class PersonId {
-            Guid Value
-        }
-
-        class GroupId {
             Guid Value
         }
 
@@ -75,16 +70,16 @@ classDiagram
     }
 
     namespace Catalog {
-        class Person {
-            PersonId Id
-            ArtistId ArtistId
+        class Artist {
+            <<abstract>>
+            ArtistId Id
             string Name
         }
 
+        class Person {
+        }
+
         class Group {
-            GroupId Id
-            ArtistId ArtistId
-            string Name
         }
 
         class Label {
@@ -94,12 +89,26 @@ classDiagram
 
         class Release {
             ReleaseId Id
-            string Title
-            LabelId? LabelId
-            int? Year
-            DateOnly? ReleaseDate
-            Rating? Rating
+            ReleaseSummary Summary
             ReleaseTrack[] Tracklist
+            Cataloging Cataloging
+        }
+
+        class ReleaseSummary {
+            string Title
+            ReleaseMetadata Metadata
+            OptionalValue~Rating~ Rating
+        }
+
+        class ReleaseMetadata {
+            ReleaseType Type
+            OptionalValue~LabelId~ LabelId
+            OptionalValue~int~ Year
+            OptionalValue~DateOnly~ ReleaseDate
+            OptionalValue~CoverImage~ CoverImage
+        }
+
+        class Cataloging {
             Genre[] Genres
             Tag[] Tags
         }
@@ -107,23 +116,33 @@ classDiagram
         class Track {
             TrackId Id
             string Title
-            TimeSpan? Duration
-            Rating? Rating
-            Genre[] Genres
-            Tag[] Tags
+            TrackDetails Details
+            Cataloging Cataloging
+        }
+
+        class TrackDetails {
+            OptionalValue~TimeSpan~ Duration
+            OptionalValue~Rating~ Rating
         }
 
         class ReleaseTrack {
-            ReleaseId ReleaseId
             TrackId TrackId
             TrackPosition Position
-            string? TitleOverride
+            OptionalValue~string~ TitleOverride
         }
 
         class TrackPosition {
             int Number
-            string? Disc
-            string? Side
+            OptionalValue~string~ Disc
+            OptionalValue~string~ Side
+        }
+
+        class ReleaseType {
+            <<enum>>
+        }
+
+        class CoverImage {
+            string Path
         }
 
         class Genre {
@@ -139,15 +158,30 @@ classDiagram
         class OwnedItem {
             OwnedItemId Id
             OwnedItemTarget Target
+            OwnedItemHolding Holding
+        }
+
+        class OwnedItemHolding {
             OwnershipStatus Status
             IMedium Medium
-            string? Condition
-            string? StorageLocation
+            OwnedItemDetails Details
+        }
+
+        class OwnedItemDetails {
+            OptionalValue~ItemCondition~ Condition
+            OptionalValue~StorageLocation~ StorageLocation
         }
 
         class OwnedItemTarget {
-            ReleaseId? ReleaseId
-            TrackId? TrackId
+            <<abstract>>
+        }
+
+        class ReleaseOwnedItemTarget {
+            ReleaseId ReleaseId
+        }
+
+        class TrackOwnedItemTarget {
+            TrackId TrackId
         }
 
         class IMedium {
@@ -158,6 +192,7 @@ classDiagram
         class DigitalFile {
             FilePath Path
             AudioFileFormat Format
+            OptionalValue~FileImportIdentity~ ImportIdentity
         }
 
         class VinylRecord {
@@ -180,12 +215,27 @@ classDiagram
             string Value
         }
 
+        class FileImportIdentity {
+            FilePath Path
+            long SizeBytes
+            DateTimeOffset LastModifiedAt
+            OptionalValue~string~ ContentHash
+        }
+
         class AudioFileFormat {
-            string Code
+            <<enum>>
         }
 
         class OwnershipStatus {
-            string Code
+            <<enum>>
+        }
+
+        class ItemCondition {
+            <<enum>>
+        }
+
+        class StorageLocation {
+            string Name
         }
     }
 
@@ -203,12 +253,19 @@ classDiagram
         }
 
         class CreditTarget {
-            ReleaseId? ReleaseId
-            TrackId? TrackId
+            <<abstract>>
+        }
+
+        class ReleaseCreditTarget {
+            ReleaseId ReleaseId
+        }
+
+        class TrackCreditTarget {
+            TrackId TrackId
         }
 
         class CreditRole {
-            string Code
+            <<enum>>
         }
     }
 
@@ -218,16 +275,16 @@ classDiagram
             ArtistId SourceArtistId
             ArtistId TargetArtistId
             ArtistRelationType Type
-            ArtistRelationPeriod? Period
+            OptionalValue~ArtistRelationPeriod~ Period
         }
 
         class ArtistRelationType {
-            string Code
+            <<enum>>
         }
 
         class ArtistRelationPeriod {
-            int? StartYear
-            int? EndYear
+            OptionalValue~int~ StartYear
+            OptionalValue~int~ EndYear
         }
 
         class TrackRelation {
@@ -238,7 +295,7 @@ classDiagram
         }
 
         class TrackRelationType {
-            string Code
+            <<enum>>
         }
     }
 
@@ -248,7 +305,7 @@ classDiagram
         }
 
         class ReleaseTrackRatingSummary {
-            decimal? AverageRating
+            OptionalValue~decimal~ AverageRating
             int RatedTrackCount
         }
 
@@ -257,8 +314,7 @@ classDiagram
         }
     }
 
-    IEntity~PersonId~ <|.. Person
-    IEntity~GroupId~ <|.. Group
+    IEntity~ArtistId~ <|.. Artist
     IEntity~LabelId~ <|.. Label
     IEntity~ReleaseId~ <|.. Release
     IEntity~TrackId~ <|.. Track
@@ -267,40 +323,51 @@ classDiagram
     IEntity~ArtistRelationId~ <|.. ArtistRelation
     IEntity~TrackRelationId~ <|.. TrackRelation
 
-    INamedEntity <|.. IArtist
-    IArtist <|.. ICreditContributor
-    ICreditContributor <|.. Person
-    ICreditContributor <|.. Group
+    INamedEntity <|.. Artist
+    OptionalValue~T~ <|-- PresentOptionalValue~T~
+    OptionalValue~T~ <|-- MissingOptionalValue~T~
+    Artist <|-- Person
+    Artist <|-- Group
     ICreditTarget <|.. Release
     ICreditTarget <|.. Track
 
-    Person --> PersonId
-    Person --> ArtistId
-    Group --> GroupId
-    Group --> ArtistId
+    Artist --> ArtistId
     Label --> LabelId
 
     Release --> ReleaseId
-    Release --> LabelId : optional label
+    Release *-- ReleaseSummary
     Release *-- ReleaseTrack : tracklist
-    Release o-- Rating : own rating
-    Release o-- Genre
-    Release o-- Tag
-    ReleaseTrack --> ReleaseId
+    Release *-- Cataloging
+    ReleaseSummary *-- ReleaseMetadata
+    ReleaseSummary *-- OptionalValue~Rating~ : own rating
+    ReleaseMetadata *-- ReleaseType
+    ReleaseMetadata *-- OptionalValue~LabelId~ : label
+    ReleaseMetadata *-- OptionalValue~int~ : year
+    ReleaseMetadata *-- OptionalValue~DateOnly~ : release date
+    ReleaseMetadata *-- OptionalValue~CoverImage~ : cover image
+    Cataloging o-- Genre
+    Cataloging o-- Tag
     ReleaseTrack --> TrackId
     ReleaseTrack *-- TrackPosition
 
     Track --> TrackId
-    Track o-- Rating : own rating
-    Track o-- Genre
-    Track o-- Tag
+    Track *-- TrackDetails
+    Track *-- Cataloging
+    TrackDetails *-- OptionalValue~TimeSpan~ : duration
+    TrackDetails *-- OptionalValue~Rating~ : own rating
 
     OwnedItem --> OwnedItemId
     OwnedItem *-- OwnedItemTarget
-    OwnedItem *-- OwnershipStatus
-    OwnedItem *-- IMedium
-    OwnedItemTarget --> ReleaseId : release target
-    OwnedItemTarget --> TrackId : track target
+    OwnedItem *-- OwnedItemHolding
+    OwnedItemHolding *-- OwnershipStatus
+    OwnedItemHolding *-- IMedium
+    OwnedItemHolding *-- OwnedItemDetails
+    OwnedItemDetails *-- OptionalValue~ItemCondition~ : condition
+    OwnedItemDetails *-- OptionalValue~StorageLocation~ : storage location
+    OwnedItemTarget <|-- ReleaseOwnedItemTarget
+    OwnedItemTarget <|-- TrackOwnedItemTarget
+    ReleaseOwnedItemTarget --> ReleaseId : release target
+    TrackOwnedItemTarget --> TrackId : track target
     IMedium <|.. DigitalFile
     IMedium <|.. VinylRecord
     IMedium <|.. CompactDisc
@@ -308,20 +375,27 @@ classDiagram
     IMedium <|.. OtherMedium
     DigitalFile *-- FilePath
     DigitalFile *-- AudioFileFormat
+    DigitalFile *-- OptionalValue~FileImportIdentity~ : import identity
+    FileImportIdentity --> FilePath
+    FileImportIdentity *-- OptionalValue~string~ : content hash
 
     Credit --> CreditId
     Credit *-- CreditContributor
     Credit *-- CreditTarget
     Credit *-- CreditRole
     CreditContributor --> ArtistId
-    CreditTarget --> ReleaseId : release target
-    CreditTarget --> TrackId : track target
+    CreditTarget <|-- ReleaseCreditTarget
+    CreditTarget <|-- TrackCreditTarget
+    ReleaseCreditTarget --> ReleaseId : release target
+    TrackCreditTarget --> TrackId : track target
 
     ArtistRelation --> ArtistRelationId
     ArtistRelation --> ArtistId : source
     ArtistRelation --> ArtistId : target
     ArtistRelation *-- ArtistRelationType
-    ArtistRelation o-- ArtistRelationPeriod
+    ArtistRelation *-- OptionalValue~ArtistRelationPeriod~ : period
+    ArtistRelationPeriod *-- OptionalValue~int~ : start year
+    ArtistRelationPeriod *-- OptionalValue~int~ : end year
 
     TrackRelation --> TrackRelationId
     TrackRelation --> TrackId : source
@@ -340,4 +414,8 @@ classDiagram
 - Credits describe artist contributions to releases or tracks.
 - Relations describe artist-to-artist and track-to-track graph edges.
 - Ratings are independent for releases and tracks; release track averages are calculated, not stored.
-- SharedKernel contains typed identifiers, capability interfaces, validation support, and domain exceptions.
+- Digital file import identity supports idempotent local audio folder imports.
+- Optional domain data uses `OptionalValue<T>` instead of nullable properties, nullable parameters, or `null` sentinel values.
+- Variant references such as owned-item targets and credit targets use distinct subtypes instead of nullable paired identifiers.
+- Closed domain choices with no variant-specific behavior use enums. Domain choices must not be open string-code value objects; string representations belong at API, persistence, import, and export boundaries.
+- SharedKernel contains typed identifiers, optional values, capability interfaces, validation support, and domain exceptions.

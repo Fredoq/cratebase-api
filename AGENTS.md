@@ -194,11 +194,16 @@ When RabbitMQ is introduced:
 - Do not use primary constructors for classes or records unless the repository explicitly adopts them later.
 - Keep public APIs small.
 - Avoid public mutable setters outside persistence models and serialization contracts.
+- Domain models must not expose nullable public properties, nullable parameters, optional parameters with `null` defaults, or `null` sentinel values.
+- Represent optional domain data with explicit value objects such as `OptionalValue<T>`, and represent alternatives with distinct subtypes instead of paired nullable identifiers.
+- C# `enum` is allowed for simple closed domain choices with no variant-specific state or behavior.
+- Use object models for domain choices when variants need behavior, state, invariants, or richer identity.
+- Domain choices must not be represented by public string codes or descriptions, and must not expose open factories such as `FromCode` or `FromDescription`.
 - Avoid static methods for business logic.
 - Prefer composition over inheritance.
 - Avoid reflection for domain behavior.
 - Avoid type introspection and casts in domain logic.
-- Methods should not return `null`; use exceptions, empty collections, nullable result types only when absence is part of the contract, or explicit result objects.
+- Methods should not return `null`; use exceptions, empty collections, `OptionalValue<T>`, or explicit result objects.
 - Do not pass `null` as a valid argument.
 - Error and log messages should be single English sentences and should not end with a period.
 

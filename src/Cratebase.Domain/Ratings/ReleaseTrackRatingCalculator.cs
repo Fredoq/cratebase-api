@@ -1,5 +1,4 @@
 using Cratebase.Domain.Catalog;
-
 namespace Cratebase.Domain.Ratings;
 
 public static class ReleaseTrackRatingCalculator
@@ -16,10 +15,18 @@ public static class ReleaseTrackRatingCalculator
 
         foreach (ReleaseTrack releaseTrack in release.Tracklist)
         {
-            if (tracksById.TryGetValue(releaseTrack.TrackId, out Track? track) && track.Rating is { } rating)
+            if (!tracksById.TryGetValue(releaseTrack.TrackId, out Track? track))
             {
-                ratings.Add(rating.Value);
+                continue;
             }
+
+            _ = track.Details.Rating.Match(
+                whenPresent: rating =>
+                {
+                    ratings.Add(rating.Value);
+                    return true;
+                },
+                whenMissing: () => false);
         }
 
         return ratings.Count == 0

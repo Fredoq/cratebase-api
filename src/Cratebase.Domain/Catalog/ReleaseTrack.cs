@@ -1,38 +1,40 @@
 using Cratebase.Domain.SharedKernel.Ids;
+using Cratebase.Domain.SharedKernel.Optional;
 
 namespace Cratebase.Domain.Catalog;
 
 public sealed class ReleaseTrack
 {
-    private ReleaseTrack(ReleaseId releaseId, TrackId trackId, TrackPosition position, string? titleOverride)
+    private ReleaseTrack(TrackId trackId, TrackPosition position, IOptionalValue<string> titleOverride)
     {
-        ReleaseId = releaseId;
         TrackId = trackId;
         Position = position;
         TitleOverride = titleOverride;
     }
 
-    public ReleaseId ReleaseId { get; }
-
     public TrackId TrackId { get; }
 
     public TrackPosition Position { get; }
 
-    public string? TitleOverride { get; }
+    public IOptionalValue<string> TitleOverride { get; }
 
-    public static ReleaseTrack Create(ReleaseId releaseId, TrackId trackId, TrackPosition position)
-    {
-        return Create(releaseId, trackId, position, null);
-    }
-
-    public static ReleaseTrack Create(ReleaseId releaseId, TrackId trackId, TrackPosition position, string? titleOverride)
+    public static ReleaseTrack Create(TrackId trackId, TrackPosition position)
     {
         ArgumentNullException.ThrowIfNull(position);
 
+        return new ReleaseTrack(trackId, position, Optional.Missing<string>());
+    }
+
+    public static ReleaseTrack Create(TrackId trackId, TrackPosition position, string titleOverride)
+    {
+        ArgumentNullException.ThrowIfNull(position);
+        ArgumentNullException.ThrowIfNull(titleOverride);
+
         return new ReleaseTrack(
-            releaseId,
             trackId,
             position,
-            string.IsNullOrWhiteSpace(titleOverride) ? null : titleOverride.Trim());
+            string.IsNullOrWhiteSpace(titleOverride)
+                ? Optional.Missing<string>()
+                : Optional.From(titleOverride.Trim()));
     }
 }

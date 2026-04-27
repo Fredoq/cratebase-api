@@ -1,23 +1,42 @@
 using Cratebase.Domain.SharedKernel.Errors;
+using Cratebase.Domain.SharedKernel.Optional;
+using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Relations;
 
 public sealed record ArtistRelationPeriod
 {
-    private ArtistRelationPeriod(int? startYear, int? endYear)
+    private ArtistRelationPeriod(IOptionalValue<int> startYear, IOptionalValue<int> endYear)
     {
         StartYear = startYear;
         EndYear = endYear;
     }
 
-    public int? StartYear { get; }
+    public IOptionalValue<int> StartYear { get; }
 
-    public int? EndYear { get; }
+    public IOptionalValue<int> EndYear { get; }
 
-    public static ArtistRelationPeriod FromYears(int? startYear, int? endYear)
+    public static ArtistRelationPeriod FromYears(int startYear, int endYear)
     {
-        return startYear is not null && endYear is not null && startYear > endYear
+        startYear = Guard.Positive(startYear, nameof(startYear), "relation_period.start_year_required");
+        endYear = Guard.Positive(endYear, nameof(endYear), "relation_period.end_year_required");
+
+        return startYear > endYear
             ? throw new DomainException("relation_period.invalid_range", "Relation period start year cannot be after end year")
-            : new ArtistRelationPeriod(startYear, endYear);
+            : new ArtistRelationPeriod(Optional.From(startYear), Optional.From(endYear));
+    }
+
+    public static ArtistRelationPeriod StartingAt(int startYear)
+    {
+        return new ArtistRelationPeriod(
+            Optional.From(Guard.Positive(startYear, nameof(startYear), "relation_period.start_year_required")),
+            Optional.Missing<int>());
+    }
+
+    public static ArtistRelationPeriod EndingAt(int endYear)
+    {
+        return new ArtistRelationPeriod(
+            Optional.Missing<int>(),
+            Optional.From(Guard.Positive(endYear, nameof(endYear), "relation_period.end_year_required")));
     }
 }
