@@ -5,5 +5,6 @@ public abstract record OptionalValue<T>
 {
     public abstract bool HasValue { get; }
 
-    public abstract TResult Match<TResult>(Func<T, TResult> whenPresent, Func<TResult> whenMissing);
+    public abstract TResult Match<TResult>(Func<T, TResult> whenPresent, Func<TResult> whenMissing)
+        where TResult : notnull;
 }

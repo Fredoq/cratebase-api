@@ -28,9 +28,15 @@ public sealed record TrackPosition
 
     public static TrackPosition FromNumber(int number, string disc, string side)
     {
+        ArgumentNullException.ThrowIfNull(disc);
+        ArgumentNullException.ThrowIfNull(side);
+
+        string trimmedDisc = disc.Trim();
+        string trimmedSide = side.Trim();
+
         return new TrackPosition(
             Guard.Positive(number, nameof(number), "track_position.number_required"),
-            string.IsNullOrWhiteSpace(disc) ? Optional.Missing<string>() : Optional.From(disc.Trim()),
-            string.IsNullOrWhiteSpace(side) ? Optional.Missing<string>() : Optional.From(side.Trim()));
+            trimmedDisc.Length == 0 ? Optional.Missing<string>() : Optional.From(trimmedDisc),
+            trimmedSide.Length == 0 ? Optional.Missing<string>() : Optional.From(trimmedSide));
     }
 }

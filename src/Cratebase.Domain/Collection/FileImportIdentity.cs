@@ -42,6 +42,7 @@ public sealed record FileImportIdentity
         string contentHash)
     {
         ArgumentNullException.ThrowIfNull(path);
+        ArgumentNullException.ThrowIfNull(contentHash);
 
         return new FileImportIdentity(
             path,

@@ -42,7 +42,9 @@ public sealed class DomainModelShapeTests
 
         string[] violations =
         [
-            .. domainTypes.SelectMany(type => NullablePropertyViolations(type).Concat(NullableParameterViolations(type)))
+            .. domainTypes.SelectMany(type => NullablePropertyViolations(type)
+                .Concat(NullableParameterViolations(type))
+                .Concat(NullableReturnViolations(type)))
         ];
 
         Assert.Empty(violations);
@@ -128,6 +130,18 @@ public sealed class DomainModelShapeTests
                     nullabilityContext.Create(parameter).ReadState == NullabilityState.Nullable ||
                     HasNullDefault(parameter))
                 .Select(parameter => $"{type.FullName}.{method.Name} parameter {parameter.Name} uses a nullable contract"));
+    }
+
+    private static IEnumerable<string> NullableReturnViolations(Type type)
+    {
+        var nullabilityContext = new NullabilityInfoContext();
+
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(method => !method.IsSpecialName && method.Name is not nameof(Equals))
+            .Where(method =>
+                Nullable.GetUnderlyingType(method.ReturnType) is not null ||
+                nullabilityContext.Create(method.ReturnParameter).ReadState == NullabilityState.Nullable)
+            .Select(method => $"{type.FullName}.{method.Name} returns a nullable contract");
     }
 
     private static bool HasNullDefault(ParameterInfo parameter)

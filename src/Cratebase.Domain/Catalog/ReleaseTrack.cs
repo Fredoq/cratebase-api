@@ -28,6 +28,7 @@ public sealed class ReleaseTrack
     public static ReleaseTrack Create(TrackId trackId, TrackPosition position, string titleOverride)
     {
         ArgumentNullException.ThrowIfNull(position);
+        ArgumentNullException.ThrowIfNull(titleOverride);
 
         return new ReleaseTrack(
             trackId,

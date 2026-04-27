@@ -4,9 +4,15 @@ using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Catalog;
 
-public abstract class Artist(ArtistId id, string name) : IEntity<ArtistId>, INamedEntity
+public abstract class Artist : IEntity<ArtistId>, INamedEntity
 {
-    public ArtistId Id { get; } = id;
+    protected Artist(ArtistId id, string name)
+    {
+        Id = id;
+        Name = Guard.RequiredText(name, nameof(name), "artist.name_required");
+    }
 
-    public string Name { get; } = Guard.RequiredText(name, nameof(name), "artist.name_required");
+    public ArtistId Id { get; }
+
+    public string Name { get; }
 }

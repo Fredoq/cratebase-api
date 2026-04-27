@@ -40,6 +40,8 @@ public sealed class CatalogModelTests
     public void Track_position_rejects_non_positive_numbers_and_normalizes_markers()
     {
         DomainException exception = Assert.Throws<DomainException>(() => TrackPosition.FromNumber(0));
+        _ = Assert.Throws<ArgumentNullException>(() => TrackPosition.FromNumber(1, null!, "A"));
+        _ = Assert.Throws<ArgumentNullException>(() => TrackPosition.FromNumber(1, "1", null!));
         var position = TrackPosition.FromNumber(1, " A ", "  ");
 
         Assert.Equal("track_position.number_required", exception.Code);
@@ -50,6 +52,12 @@ public sealed class CatalogModelTests
     [Fact]
     public void Release_track_normalizes_blank_title_override()
     {
+        _ = Assert.Throws<ArgumentNullException>(() =>
+            ReleaseTrack.Create(
+                TrackId.New(),
+                TrackPosition.FromNumber(1),
+                null!));
+
         var releaseTrack = ReleaseTrack.Create(
             TrackId.New(),
             TrackPosition.FromNumber(1),

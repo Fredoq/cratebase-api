@@ -1,3 +1,5 @@
+using Cratebase.Domain.SharedKernel.Validation;
+
 namespace Cratebase.Domain.Collection;
 
 public sealed record OwnedItemHolding
@@ -19,12 +21,15 @@ public sealed record OwnedItemHolding
     {
         ArgumentNullException.ThrowIfNull(medium);
 
-        return new OwnedItemHolding(status, medium, OwnedItemDetails.Empty);
+        return new OwnedItemHolding(
+            Guard.DefinedEnum(status, nameof(status), "owned_item.status_invalid"),
+            medium,
+            OwnedItemDetails.Empty);
     }
 
     public OwnedItemHolding WithStatus(OwnershipStatus status)
     {
-        return new OwnedItemHolding(status, Medium, Details);
+        return new OwnedItemHolding(Guard.DefinedEnum(status, nameof(status), "owned_item.status_invalid"), Medium, Details);
     }
 
     public OwnedItemHolding WithDetails(OwnedItemDetails details)

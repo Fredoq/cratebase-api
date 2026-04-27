@@ -134,6 +134,27 @@ public sealed class OwnedItemTests
     }
 
     [Fact]
+    public void Owned_item_rejects_undefined_statuses()
+    {
+        DomainException createException = Assert.Throws<DomainException>(() =>
+            OwnedItem.Create(
+                OwnedItemId.New(),
+                OwnedItemTarget.ForRelease(ReleaseId.New()),
+                default,
+                VinylRecord.Create("LP")));
+        var item = OwnedItem.Create(
+            OwnedItemId.New(),
+            OwnedItemTarget.ForRelease(ReleaseId.New()),
+            OwnershipStatus.Owned,
+            VinylRecord.Create("LP"));
+
+        DomainException updateException = Assert.Throws<DomainException>(() => item.WithStatus((OwnershipStatus)999));
+
+        Assert.Equal("owned_item.status_invalid", createException.Code);
+        Assert.Equal("owned_item.status_invalid", updateException.Code);
+    }
+
+    [Fact]
     public void Owned_item_details_validate_required_values()
     {
         Assert.Equal("storage_location.name_required", Assert.Throws<DomainException>(() => StorageLocation.FromName(" ")).Code);
@@ -155,6 +176,19 @@ public sealed class OwnedItemTests
 
         Assert.Equal(123_456, actualIdentity.SizeBytes);
         Assert.Equal("abcdef", Assert.IsType<PresentOptionalValue<string>>(actualIdentity.ContentHash).Value);
+    }
+
+    [Fact]
+    public void File_import_identity_rejects_null_hash_values()
+    {
+        var path = FilePath.FromAbsolutePath("/music/New Order/Blue Monday.flac");
+
+        _ = Assert.Throws<ArgumentNullException>(() =>
+            FileImportIdentity.Create(
+                path,
+                123_456,
+                DateTimeOffset.UnixEpoch,
+                null!));
     }
 
     [Fact]

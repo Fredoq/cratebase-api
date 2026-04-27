@@ -16,9 +16,15 @@ public sealed class RelationTests
             () => ArtistRelation.Create(ArtistRelationId.New(), artistId, artistId, ArtistRelationType.Alias));
         DomainException periodException = Assert.Throws<DomainException>(
             () => ArtistRelationPeriod.FromYears(1990, 1989));
+        DomainException startYearException = Assert.Throws<DomainException>(
+            () => ArtistRelationPeriod.StartingAt(0));
+        DomainException endYearException = Assert.Throws<DomainException>(
+            () => ArtistRelationPeriod.EndingAt(-1));
 
         Assert.Equal("artist_relation.self_relation", selfException.Code);
         Assert.Equal("relation_period.invalid_range", periodException.Code);
+        Assert.Equal("relation_period.start_year_required", startYearException.Code);
+        Assert.Equal("relation_period.end_year_required", endYearException.Code);
     }
 
     [Fact]
@@ -57,8 +63,8 @@ public sealed class RelationTests
     [Fact]
     public void Relation_types_are_closed_object_catalogs()
     {
-        Assert.Equal(ArtistRelationType.MemberOf, ArtistRelationType.MemberOf);
-        Assert.Equal(TrackRelationType.VersionOf, TrackRelationType.VersionOf);
+        Assert.Contains(nameof(ArtistRelationType.MemberOf), Enum.GetNames<ArtistRelationType>());
+        Assert.Contains(nameof(TrackRelationType.VersionOf), Enum.GetNames<TrackRelationType>());
         Assert.NotEqual(ArtistRelationType.Alias, ArtistRelationType.Collaboration);
         Assert.NotEqual(TrackRelationType.RemixOf, TrackRelationType.EditOf);
     }
