@@ -1,6 +1,7 @@
 using Cratebase.Domain.Relations;
 using Cratebase.Domain.SharedKernel.Errors;
 using Cratebase.Domain.SharedKernel.Ids;
+using Cratebase.Domain.SharedKernel.Optional;
 
 namespace Cratebase.Domain.Tests.Relations;
 
@@ -30,8 +31,10 @@ public sealed class RelationTests
             ArtistRelationType.MemberOf,
             ArtistRelationPeriod.FromYears(1980, 1985));
 
-        Assert.Equal(1980, relation.Period?.StartYear);
-        Assert.Equal(1985, relation.Period?.EndYear);
+        ArtistRelationPeriod period = Assert.IsType<PresentOptionalValue<ArtistRelationPeriod>>(relation.Period).Value;
+
+        Assert.Equal(1980, Assert.IsType<PresentOptionalValue<int>>(period.StartYear).Value);
+        Assert.Equal(1985, Assert.IsType<PresentOptionalValue<int>>(period.EndYear).Value);
     }
 
     [Fact]
@@ -52,14 +55,11 @@ public sealed class RelationTests
     }
 
     [Fact]
-    public void Relation_type_codes_are_cached_and_normalized()
+    public void Relation_types_are_closed_object_catalogs()
     {
-        var artistRelationType = ArtistRelationType.FromCode(" Alias ");
-        var trackRelationType = TrackRelationType.FromCode(" Remix_Of ");
-
-        Assert.Same(ArtistRelationType.MemberOf, ArtistRelationType.MemberOf);
-        Assert.Same(TrackRelationType.VersionOf, TrackRelationType.VersionOf);
-        Assert.Equal("alias", artistRelationType.Code);
-        Assert.Equal("remix_of", trackRelationType.Code);
+        Assert.Equal(ArtistRelationType.MemberOf, ArtistRelationType.MemberOf);
+        Assert.Equal(TrackRelationType.VersionOf, TrackRelationType.VersionOf);
+        Assert.NotEqual(ArtistRelationType.Alias, ArtistRelationType.Collaboration);
+        Assert.NotEqual(TrackRelationType.RemixOf, TrackRelationType.EditOf);
     }
 }

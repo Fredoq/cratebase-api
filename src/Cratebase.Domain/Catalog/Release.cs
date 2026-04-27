@@ -1,80 +1,49 @@
-using Cratebase.Domain.Ratings;
 using Cratebase.Domain.SharedKernel.Errors;
 using Cratebase.Domain.SharedKernel.Ids;
 using Cratebase.Domain.SharedKernel.Interfaces;
-using Cratebase.Domain.SharedKernel.Validation;
+using Cratebase.Domain.Ratings;
 
 namespace Cratebase.Domain.Catalog;
 
 public sealed class Release : IEntity<ReleaseId>, ICreditTarget
 {
-    private Release(ReleaseState state)
+    private Release(
+        ReleaseId id,
+        ReleaseSummary summary,
+        IReadOnlyList<ReleaseTrack> tracklist,
+        Cataloging cataloging)
     {
-        Id = state.Id;
-        Title = state.Title;
-        Type = state.Type;
-        LabelId = state.LabelId;
-        Year = state.Year;
-        ReleaseDate = state.ReleaseDate;
-        CoverImage = state.CoverImage;
-        Rating = state.Rating;
-        Tracklist = state.Tracklist;
-        Genres = state.Genres;
-        Tags = state.Tags;
+        Id = id;
+        Summary = summary;
+        Tracklist = tracklist;
+        Cataloging = cataloging;
     }
 
     public ReleaseId Id { get; }
 
-    public string Title { get; }
-
-    public string Name => Title;
-
-    public string DisplayName => Title;
-
-    public ReleaseType Type { get; }
-
-    public LabelId? LabelId { get; }
-
-    public int? Year { get; }
-
-    public DateOnly? ReleaseDate { get; }
-
-    public CoverImage? CoverImage { get; }
-
-    public Rating? Rating { get; }
+    public ReleaseSummary Summary { get; }
 
     public IReadOnlyList<ReleaseTrack> Tracklist { get; }
 
-    public IReadOnlyList<Genre> Genres { get; }
+    public Cataloging Cataloging { get; }
 
-    public IReadOnlyList<Tag> Tags { get; }
+    public string DisplayName => Summary.Title;
 
     public static Release Create(ReleaseId id, string title)
     {
-        return new Release(new ReleaseState
-        {
-            Id = id,
-            Title = Guard.RequiredText(title, nameof(title), "release.title_required"),
-            Type = ReleaseType.Unknown,
-            LabelId = null,
-            Year = null,
-            ReleaseDate = null,
-            CoverImage = null,
-            Rating = null,
-            Tracklist = [],
-            Genres = [],
-            Tags = []
-        });
+        return new Release(id, ReleaseSummary.Create(title), [], Cataloging.Empty);
+    }
+
+    public Release WithSummary(ReleaseSummary summary)
+    {
+        ArgumentNullException.ThrowIfNull(summary);
+
+        return new Release(Id, summary, [.. Tracklist], Cataloging);
     }
 
     public Release WithRating(Rating rating)
     {
-        ArgumentNullException.ThrowIfNull(rating);
-
-        return Copy(state => state with
-        {
-            Rating = rating
-        });
+        return WithSummary(Summary.WithRating(rating));
     }
 
     public Release WithTrack(ReleaseTrack releaseTrack)
@@ -83,85 +52,14 @@ public sealed class Release : IEntity<ReleaseId>, ICreditTarget
 
         EnsureTrackPositionIsUnique(releaseTrack.Position);
 
-        return Copy(state => state with
-        {
-            Tracklist = [.. Tracklist, releaseTrack]
-        });
+        return new Release(Id, Summary, [.. Tracklist, releaseTrack], Cataloging);
     }
 
-    public Release WithLabel(LabelId labelId)
+    public Release WithCataloging(Cataloging cataloging)
     {
-        return Copy(state => state with
-        {
-            LabelId = labelId
-        });
-    }
+        ArgumentNullException.ThrowIfNull(cataloging);
 
-    public Release WithType(ReleaseType type)
-    {
-        ArgumentNullException.ThrowIfNull(type);
-
-        return Copy(state => state with
-        {
-            Type = type
-        });
-    }
-
-    public Release WithReleaseYear(int year)
-    {
-        return Copy(state => state with
-        {
-            Year = Guard.Positive(year, nameof(year), "release.year_required")
-        });
-    }
-
-    public Release WithReleaseDate(DateOnly releaseDate)
-    {
-        return Copy(state => state with
-        {
-            ReleaseDate = releaseDate
-        });
-    }
-
-    public Release WithCoverImage(CoverImage coverImage)
-    {
-        ArgumentNullException.ThrowIfNull(coverImage);
-
-        return Copy(state => state with
-        {
-            CoverImage = coverImage
-        });
-    }
-
-    public Release WithGenre(Genre genre)
-    {
-        ArgumentNullException.ThrowIfNull(genre);
-
-        return Genres.Contains(genre)
-            ? this
-            : Copy(state => state with
-            {
-                Genres = [.. Genres, genre]
-            });
-    }
-
-    public Release WithTag(Tag tag)
-    {
-        ArgumentNullException.ThrowIfNull(tag);
-
-        return Tags.Contains(tag)
-            ? this
-            : Copy(state => state with
-            {
-                Tags = [.. Tags, tag]
-            });
-    }
-
-    private Release Copy(Func<ReleaseState, ReleaseState> update)
-    {
-        ArgumentNullException.ThrowIfNull(update);
-
-        return new Release(update(ToState()));
+        return new Release(Id, Summary, [.. Tracklist], cataloging);
     }
 
     private void EnsureTrackPositionIsUnique(TrackPosition position)
@@ -170,48 +68,5 @@ public sealed class Release : IEntity<ReleaseId>, ICreditTarget
         {
             throw new DomainException("release_track.position_duplicate", "Release track position already exists");
         }
-    }
-
-    private ReleaseState ToState()
-    {
-        return new ReleaseState
-        {
-            Id = Id,
-            Title = Title,
-            Type = Type,
-            LabelId = LabelId,
-            Year = Year,
-            ReleaseDate = ReleaseDate,
-            CoverImage = CoverImage,
-            Rating = Rating,
-            Tracklist = [.. Tracklist],
-            Genres = [.. Genres],
-            Tags = [.. Tags]
-        };
-    }
-
-    private sealed record ReleaseState
-    {
-        public required ReleaseId Id { get; init; }
-
-        public required string Title { get; init; }
-
-        public required ReleaseType Type { get; init; }
-
-        public LabelId? LabelId { get; init; }
-
-        public int? Year { get; init; }
-
-        public DateOnly? ReleaseDate { get; init; }
-
-        public CoverImage? CoverImage { get; init; }
-
-        public Rating? Rating { get; init; }
-
-        public required IReadOnlyList<ReleaseTrack> Tracklist { get; init; }
-
-        public required IReadOnlyList<Genre> Genres { get; init; }
-
-        public required IReadOnlyList<Tag> Tags { get; init; }
     }
 }

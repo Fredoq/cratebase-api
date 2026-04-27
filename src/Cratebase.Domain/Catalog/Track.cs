@@ -10,84 +10,55 @@ public sealed class Track : IEntity<TrackId>, ICreditTarget
     private Track(
         TrackId id,
         string title,
-        TimeSpan? duration,
-        Rating? rating,
-        IReadOnlyList<Genre> genres,
-        IReadOnlyList<Tag> tags)
+        TrackDetails details,
+        Cataloging cataloging)
     {
         Id = id;
         Title = title;
-        Duration = duration;
-        Rating = rating;
-        Genres = genres;
-        Tags = tags;
+        Details = details;
+        Cataloging = cataloging;
     }
 
     public TrackId Id { get; }
 
     public string Title { get; }
 
-    public string Name => Title;
-
     public string DisplayName => Title;
 
-    public TimeSpan? Duration { get; }
+    public TrackDetails Details { get; }
 
-    public Rating? Rating { get; }
-
-    public IReadOnlyList<Genre> Genres { get; }
-
-    public IReadOnlyList<Tag> Tags { get; }
+    public Cataloging Cataloging { get; }
 
     public static Track Create(TrackId id, string title)
     {
         return new Track(
             id,
             Guard.RequiredText(title, nameof(title), "track.title_required"),
-            null,
-            null,
-            [],
-            []);
+            TrackDetails.Empty,
+            Cataloging.Empty);
+    }
+
+    public Track WithDetails(TrackDetails details)
+    {
+        ArgumentNullException.ThrowIfNull(details);
+
+        return new Track(Id, Title, details, Cataloging);
     }
 
     public Track WithDuration(TimeSpan duration)
     {
-        return Copy(duration: Guard.Positive(duration, nameof(duration), "track.duration_required"));
+        return WithDetails(Details.WithDuration(duration));
     }
 
     public Track WithRating(Rating rating)
     {
-        ArgumentNullException.ThrowIfNull(rating);
-
-        return Copy(rating: rating);
+        return WithDetails(Details.WithRating(rating));
     }
 
-    public Track WithGenre(Genre genre)
+    public Track WithCataloging(Cataloging cataloging)
     {
-        ArgumentNullException.ThrowIfNull(genre);
+        ArgumentNullException.ThrowIfNull(cataloging);
 
-        return Genres.Contains(genre) ? this : Copy(genres: [.. Genres, genre]);
-    }
-
-    public Track WithTag(Tag tag)
-    {
-        ArgumentNullException.ThrowIfNull(tag);
-
-        return Tags.Contains(tag) ? this : Copy(tags: [.. Tags, tag]);
-    }
-
-    private Track Copy(
-        TimeSpan? duration = null,
-        Rating? rating = null,
-        IReadOnlyList<Genre>? genres = null,
-        IReadOnlyList<Tag>? tags = null)
-    {
-        return new Track(
-            Id,
-            Title,
-            duration ?? Duration,
-            rating ?? Rating,
-            genres ?? [.. Genres],
-            tags ?? [.. Tags]);
+        return new Track(Id, Title, Details, cataloging);
     }
 }

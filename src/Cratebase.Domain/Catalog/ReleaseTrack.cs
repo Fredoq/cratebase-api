@@ -1,10 +1,11 @@
 using Cratebase.Domain.SharedKernel.Ids;
+using Cratebase.Domain.SharedKernel.Optional;
 
 namespace Cratebase.Domain.Catalog;
 
 public sealed class ReleaseTrack
 {
-    private ReleaseTrack(TrackId trackId, TrackPosition position, string? titleOverride)
+    private ReleaseTrack(TrackId trackId, TrackPosition position, OptionalValue<string> titleOverride)
     {
         TrackId = trackId;
         Position = position;
@@ -15,20 +16,24 @@ public sealed class ReleaseTrack
 
     public TrackPosition Position { get; }
 
-    public string? TitleOverride { get; }
+    public OptionalValue<string> TitleOverride { get; }
 
     public static ReleaseTrack Create(TrackId trackId, TrackPosition position)
     {
-        return Create(trackId, position, null);
+        ArgumentNullException.ThrowIfNull(position);
+
+        return new ReleaseTrack(trackId, position, Optional.Missing<string>());
     }
 
-    public static ReleaseTrack Create(TrackId trackId, TrackPosition position, string? titleOverride)
+    public static ReleaseTrack Create(TrackId trackId, TrackPosition position, string titleOverride)
     {
         ArgumentNullException.ThrowIfNull(position);
 
         return new ReleaseTrack(
             trackId,
             position,
-            string.IsNullOrWhiteSpace(titleOverride) ? null : titleOverride.Trim());
+            string.IsNullOrWhiteSpace(titleOverride)
+                ? Optional.Missing<string>()
+                : Optional.From(titleOverride.Trim()));
     }
 }

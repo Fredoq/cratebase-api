@@ -1,10 +1,11 @@
+using Cratebase.Domain.SharedKernel.Optional;
 using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Collection;
 
 public sealed record FileImportIdentity
 {
-    private FileImportIdentity(FilePath path, long sizeBytes, DateTimeOffset lastModifiedAt, string? contentHash)
+    private FileImportIdentity(FilePath path, long sizeBytes, DateTimeOffset lastModifiedAt, OptionalValue<string> contentHash)
     {
         Path = path;
         SizeBytes = sizeBytes;
@@ -18,13 +19,12 @@ public sealed record FileImportIdentity
 
     public DateTimeOffset LastModifiedAt { get; }
 
-    public string? ContentHash { get; }
+    public OptionalValue<string> ContentHash { get; }
 
     public static FileImportIdentity Create(
         FilePath path,
         long sizeBytes,
-        DateTimeOffset lastModifiedAt,
-        string? contentHash = null)
+        DateTimeOffset lastModifiedAt)
     {
         ArgumentNullException.ThrowIfNull(path);
 
@@ -32,6 +32,23 @@ public sealed record FileImportIdentity
             path,
             Guard.Positive(sizeBytes, nameof(sizeBytes), "file_import_identity.size_required"),
             lastModifiedAt,
-            string.IsNullOrWhiteSpace(contentHash) ? null : contentHash.Trim().ToLowerInvariant());
+            Optional.Missing<string>());
+    }
+
+    public static FileImportIdentity Create(
+        FilePath path,
+        long sizeBytes,
+        DateTimeOffset lastModifiedAt,
+        string contentHash)
+    {
+        ArgumentNullException.ThrowIfNull(path);
+
+        return new FileImportIdentity(
+            path,
+            Guard.Positive(sizeBytes, nameof(sizeBytes), "file_import_identity.size_required"),
+            lastModifiedAt,
+            string.IsNullOrWhiteSpace(contentHash)
+                ? Optional.Missing<string>()
+                : Optional.From(contentHash.Trim().ToLowerInvariant()));
     }
 }

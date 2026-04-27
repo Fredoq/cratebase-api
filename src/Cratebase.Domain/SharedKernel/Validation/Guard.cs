@@ -4,7 +4,7 @@ namespace Cratebase.Domain.SharedKernel.Validation;
 
 internal static class Guard
 {
-    public static string RequiredText(string? value, string fieldName, string code)
+    public static string RequiredText(string value, string fieldName, string code)
     {
         return string.IsNullOrWhiteSpace(value)
             ? throw new DomainException(code, $"{fieldName} is required")

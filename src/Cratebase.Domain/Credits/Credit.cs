@@ -25,7 +25,6 @@ public sealed class Credit : IEntity<CreditId>
     {
         ArgumentNullException.ThrowIfNull(contributor);
         ArgumentNullException.ThrowIfNull(target);
-        ArgumentNullException.ThrowIfNull(role);
 
         return new Credit(id, contributor, target, role);
     }

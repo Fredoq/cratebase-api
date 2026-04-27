@@ -2,6 +2,7 @@ using Cratebase.Domain.Catalog;
 using Cratebase.Domain.Ratings;
 using Cratebase.Domain.SharedKernel.Errors;
 using Cratebase.Domain.SharedKernel.Ids;
+using Cratebase.Domain.SharedKernel.Optional;
 
 namespace Cratebase.Domain.Tests.Catalog;
 
@@ -32,7 +33,7 @@ public sealed class CatalogModelTests
 
         Assert.Equal(track.Id, firstRelease.Tracklist.Single().TrackId);
         Assert.Equal(track.Id, secondRelease.Tracklist.Single().TrackId);
-        Assert.Equal(10, track.Rating?.Value);
+        Assert.Equal(10, Assert.IsType<PresentOptionalValue<Rating>>(track.Details.Rating).Value.Value);
     }
 
     [Fact]
@@ -42,8 +43,8 @@ public sealed class CatalogModelTests
         var position = TrackPosition.FromNumber(1, " A ", "  ");
 
         Assert.Equal("track_position.number_required", exception.Code);
-        Assert.Equal("A", position.Disc);
-        Assert.Null(position.Side);
+        Assert.Equal("A", Assert.IsType<PresentOptionalValue<string>>(position.Disc).Value);
+        Assert.False(position.Side.HasValue);
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public sealed class CatalogModelTests
             TrackPosition.FromNumber(1),
             "   ");
 
-        Assert.Null(releaseTrack.TitleOverride);
+        Assert.False(releaseTrack.TitleOverride.HasValue);
     }
 
     [Fact]
@@ -70,8 +71,8 @@ public sealed class CatalogModelTests
 
         ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [firstTrack, secondTrack]);
 
-        Assert.Equal(7, release.Rating?.Value);
-        Assert.Equal(9m, summary.AverageRating);
+        Assert.Equal(7, Assert.IsType<PresentOptionalValue<Rating>>(release.Summary.Rating).Value.Value);
+        Assert.Equal(9m, Assert.IsType<PresentOptionalValue<decimal>>(summary.AverageRating).Value);
         Assert.Equal(2, summary.RatedTrackCount);
     }
 
@@ -88,9 +89,9 @@ public sealed class CatalogModelTests
         ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [ratedTrack, unratedTrack]);
         ReleaseTrackRatingSummary emptySummary = ReleaseTrackRatingCalculator.Calculate(release, [unratedTrack]);
 
-        Assert.Equal(9m, summary.AverageRating);
+        Assert.Equal(9m, Assert.IsType<PresentOptionalValue<decimal>>(summary.AverageRating).Value);
         Assert.Equal(1, summary.RatedTrackCount);
-        Assert.Null(emptySummary.AverageRating);
+        Assert.False(emptySummary.AverageRating.HasValue);
         Assert.Equal(0, emptySummary.RatedTrackCount);
     }
 
@@ -105,7 +106,7 @@ public sealed class CatalogModelTests
 
         ReleaseTrackRatingSummary summary = ReleaseTrackRatingCalculator.Calculate(release, [ratedTrack, duplicateSnapshot]);
 
-        Assert.Equal(10m, summary.AverageRating);
+        Assert.Equal(10m, Assert.IsType<PresentOptionalValue<decimal>>(summary.AverageRating).Value);
         Assert.Equal(1, summary.RatedTrackCount);
     }
 
@@ -127,28 +128,42 @@ public sealed class CatalogModelTests
     {
         var labelId = LabelId.New();
         var releaseDate = new DateOnly(1989, 1, 30);
-        Release release = Release.Create(ReleaseId.New(), "Technique")
+        ReleaseMetadata metadata = ReleaseMetadata.Empty
             .WithType(ReleaseType.Album)
             .WithLabel(labelId)
             .WithReleaseYear(1989)
             .WithReleaseDate(releaseDate)
-            .WithCoverImage(CoverImage.FromPath("covers/new-order-technique.jpg"))
+            .WithCoverImage(CoverImage.FromPath("covers/new-order-technique.jpg"));
+        Cataloging cataloging = Cataloging.Empty
             .WithGenre(Genre.FromName("Alternative Dance"))
             .WithTag(Tag.FromName("favorite"));
+        Release release = Release.Create(ReleaseId.New(), "Technique")
+            .WithSummary(ReleaseSummary.Create("Technique").WithMetadata(metadata))
+            .WithCataloging(cataloging);
 
-        Assert.Equal(ReleaseType.Album, release.Type);
-        Assert.Equal(labelId, release.LabelId);
-        Assert.Equal(1989, release.Year);
-        Assert.Equal(releaseDate, release.ReleaseDate);
-        Assert.Equal("covers/new-order-technique.jpg", release.CoverImage?.Path);
-        Assert.Contains(release.Genres, genre => genre.Name == "Alternative Dance");
-        Assert.Contains(release.Tags, tag => tag.Name == "favorite");
+        ReleaseMetadata actualMetadata = release.Summary.Metadata;
+
+        Assert.Equal(ReleaseType.Album, actualMetadata.Type);
+        Assert.Equal(labelId, Assert.IsType<PresentOptionalValue<LabelId>>(actualMetadata.LabelId).Value);
+        Assert.Equal(1989, Assert.IsType<PresentOptionalValue<int>>(actualMetadata.Year).Value);
+        Assert.Equal(releaseDate, Assert.IsType<PresentOptionalValue<DateOnly>>(actualMetadata.ReleaseDate).Value);
+        Assert.Equal(
+            "covers/new-order-technique.jpg",
+            Assert.IsType<PresentOptionalValue<CoverImage>>(actualMetadata.CoverImage).Value.Path);
+        Assert.Contains(release.Cataloging.Genres, genre => genre.Name == "Alternative Dance");
+        Assert.Contains(release.Cataloging.Tags, tag => tag.Name == "favorite");
     }
 
     [Fact]
-    public void Release_type_and_cover_image_validate_required_values()
+    public void Release_type_is_a_closed_object_catalog()
     {
-        Assert.Equal("release_type.code_required", Assert.Throws<DomainException>(() => ReleaseType.FromCode(" ")).Code);
+        Assert.Equal(ReleaseType.Album, ReleaseType.Album);
+        Assert.NotEqual(ReleaseType.Album, ReleaseType.Ep);
+    }
+
+    [Fact]
+    public void Cover_image_validates_required_values()
+    {
         Assert.Equal("cover_image.path_required", Assert.Throws<DomainException>(() => CoverImage.FromPath(" ")).Code);
     }
 
@@ -167,11 +182,13 @@ public sealed class CatalogModelTests
     {
         Track track = Track.Create(TrackId.New(), "Dreams Never End")
             .WithDuration(TimeSpan.FromMinutes(3))
-            .WithGenre(Genre.FromName("Post-punk"))
-            .WithTag(Tag.FromName("opener"));
+            .WithCataloging(
+                Cataloging.Empty
+                    .WithGenre(Genre.FromName("Post-punk"))
+                    .WithTag(Tag.FromName("opener")));
 
-        Assert.Equal(TimeSpan.FromMinutes(3), track.Duration);
-        Assert.Contains(track.Genres, genre => genre.Name == "Post-punk");
-        Assert.Contains(track.Tags, tag => tag.Name == "opener");
+        Assert.Equal(TimeSpan.FromMinutes(3), Assert.IsType<PresentOptionalValue<TimeSpan>>(track.Details.Duration).Value);
+        Assert.Contains(track.Cataloging.Genres, genre => genre.Name == "Post-punk");
+        Assert.Contains(track.Cataloging.Tags, tag => tag.Name == "opener");
     }
 }

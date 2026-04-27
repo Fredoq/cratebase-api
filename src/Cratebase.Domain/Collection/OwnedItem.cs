@@ -8,72 +8,38 @@ public sealed class OwnedItem : IEntity<OwnedItemId>
     private OwnedItem(
         OwnedItemId id,
         OwnedItemTarget target,
-        OwnershipStatus status,
-        IMedium medium,
-        ItemCondition? condition,
-        StorageLocation? storageLocation)
+        OwnedItemHolding holding)
     {
         Id = id;
         Target = target;
-        Status = status;
-        Medium = medium;
-        Condition = condition;
-        StorageLocation = storageLocation;
+        Holding = holding;
     }
 
     public OwnedItemId Id { get; }
 
     public OwnedItemTarget Target { get; }
 
-    public OwnershipStatus Status { get; }
-
-    public IMedium Medium { get; }
-
-    public ItemCondition? Condition { get; }
-
-    public StorageLocation? StorageLocation { get; }
+    public OwnedItemHolding Holding { get; }
 
     public static OwnedItem Create(OwnedItemId id, OwnedItemTarget target, OwnershipStatus status, IMedium medium)
     {
         ArgumentNullException.ThrowIfNull(target);
-        ArgumentNullException.ThrowIfNull(status);
-        ArgumentNullException.ThrowIfNull(medium);
 
-        return new OwnedItem(id, target, status, medium, null, null);
+        return new OwnedItem(id, target, OwnedItemHolding.Create(status, medium));
     }
 
     public OwnedItem WithStatus(OwnershipStatus status)
     {
-        ArgumentNullException.ThrowIfNull(status);
-
-        return Copy(status: status);
+        return new OwnedItem(Id, Target, Holding.WithStatus(status));
     }
 
     public OwnedItem WithCondition(ItemCondition condition)
     {
-        ArgumentNullException.ThrowIfNull(condition);
-
-        return Copy(condition: condition);
+        return new OwnedItem(Id, Target, Holding.WithDetails(Holding.Details.WithCondition(condition)));
     }
 
     public OwnedItem WithStorageLocation(StorageLocation storageLocation)
     {
-        ArgumentNullException.ThrowIfNull(storageLocation);
-
-        return Copy(storageLocation: storageLocation);
-    }
-
-    private OwnedItem Copy(
-        OwnershipStatus? status = null,
-        ItemCondition? condition = null,
-        StorageLocation? storageLocation = null)
-    {
-        return new OwnedItem(
-            Id,
-            Target,
-            status ?? Status,
-            Medium,
-            condition ?? Condition,
-            storageLocation ?? StorageLocation);
+        return new OwnedItem(Id, Target, Holding.WithDetails(Holding.Details.WithStorageLocation(storageLocation)));
     }
 }

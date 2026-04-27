@@ -1,0 +1,137 @@
+using System.Reflection;
+using Cratebase.Domain.Catalog;
+using Cratebase.Domain.Collection;
+using Cratebase.Domain.Credits;
+using Cratebase.Domain.Relations;
+
+namespace Cratebase.Domain.Tests;
+
+public sealed class DomainModelShapeTests
+{
+    [Fact]
+    public void Domain_types_keep_a_small_public_api()
+    {
+        Type[] domainTypes =
+        [
+            .. GetPublicDomainClasses()
+        ];
+
+        string[] violations =
+        [
+            .. domainTypes
+            .Select(type => new
+            {
+                Type = type,
+                PropertyCount = CountPublicInstanceProperties(type),
+                MethodCount = CountPublicMethods(type)
+            })
+            .Where(result => result.PropertyCount > 5 || result.MethodCount > 5)
+            .Select(result => $"{result.Type.FullName}: {result.PropertyCount} properties, {result.MethodCount} methods")
+        ];
+
+        Assert.Empty(violations);
+    }
+
+    [Fact]
+    public void Domain_public_api_does_not_use_nullable_contracts()
+    {
+        Type[] domainTypes =
+        [
+            .. GetPublicDomainClasses()
+        ];
+
+        string[] violations =
+        [
+            .. domainTypes.SelectMany(type => NullablePropertyViolations(type).Concat(NullableParameterViolations(type)))
+        ];
+
+        Assert.Empty(violations);
+    }
+
+    [Fact]
+    public void Domain_choices_do_not_use_public_string_identity_or_open_string_factories()
+    {
+        Type[] domainTypes =
+        [
+            .. typeof(Release).Assembly.GetTypes()
+                .Where(type =>
+                    type is { IsPublic: true } &&
+                    type.Namespace?.StartsWith("Cratebase.Domain.", StringComparison.Ordinal) == true)
+        ];
+        Type[] choiceTypes =
+        [
+            typeof(ReleaseType),
+            typeof(AudioFileFormat),
+            typeof(ItemCondition),
+            typeof(OwnershipStatus),
+            typeof(CreditRole),
+            typeof(ArtistRelationType),
+            typeof(TrackRelationType)
+        ];
+
+        string[] violations =
+        [
+            .. domainTypes.SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly)
+                .Where(method => method.Name is "FromCode" or "FromDescription")
+                .Select(method => $"{type.FullName}.{method.Name} is an open string factory")),
+            .. choiceTypes.SelectMany(type => type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                .Where(property => property.PropertyType == typeof(string) && property.Name is "Code" or "Description")
+                .Select(property => $"{type.FullName}.{property.Name} is public string identity"))
+        ];
+
+        Assert.Empty(violations);
+    }
+
+    private static IEnumerable<Type> GetPublicDomainClasses()
+    {
+        return typeof(Release).Assembly.GetTypes()
+            .Where(type =>
+                type is { IsClass: true, IsPublic: true } &&
+                type.Namespace?.StartsWith("Cratebase.Domain.", StringComparison.Ordinal) == true)
+            .OrderBy(type => type.FullName, StringComparer.Ordinal);
+    }
+
+    private static int CountPublicInstanceProperties(Type type)
+    {
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length;
+    }
+
+    private static int CountPublicMethods(Type type)
+    {
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Count(method =>
+                !method.IsSpecialName &&
+                !method.Name.StartsWith('<') &&
+                method.Name is not nameof(object.Equals) and not nameof(object.GetHashCode) and not nameof(ToString));
+    }
+
+    private static IEnumerable<string> NullablePropertyViolations(Type type)
+    {
+        var nullabilityContext = new NullabilityInfoContext();
+
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+            .Where(property =>
+                Nullable.GetUnderlyingType(property.PropertyType) is not null ||
+                nullabilityContext.Create(property).ReadState == NullabilityState.Nullable)
+            .Select(property => $"{type.FullName}.{property.Name} uses a nullable property type");
+    }
+
+    private static IEnumerable<string> NullableParameterViolations(Type type)
+    {
+        var nullabilityContext = new NullabilityInfoContext();
+
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
+            .Where(method => !method.IsSpecialName && method.Name is not nameof(object.Equals))
+            .SelectMany(method => method.GetParameters()
+                .Where(parameter =>
+                    Nullable.GetUnderlyingType(parameter.ParameterType) is not null ||
+                    nullabilityContext.Create(parameter).ReadState == NullabilityState.Nullable ||
+                    HasNullDefault(parameter))
+                .Select(parameter => $"{type.FullName}.{method.Name} parameter {parameter.Name} uses a nullable contract"));
+    }
+
+    private static bool HasNullDefault(ParameterInfo parameter)
+    {
+        return parameter.HasDefaultValue && parameter.DefaultValue is null;
+    }
+}
