@@ -22,7 +22,3 @@ app.MapGet("/health", () =>
 .WithName("GetHealth");
 
 await app.RunAsync();
-
-public partial class Program
-{
-}

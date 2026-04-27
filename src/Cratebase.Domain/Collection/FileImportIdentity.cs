@@ -5,7 +5,7 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record FileImportIdentity
 {
-    private FileImportIdentity(FilePath path, long sizeBytes, DateTimeOffset lastModifiedAt, OptionalValue<string> contentHash)
+    private FileImportIdentity(FilePath path, long sizeBytes, DateTimeOffset lastModifiedAt, IOptionalValue<string> contentHash)
     {
         Path = path;
         SizeBytes = sizeBytes;
@@ -19,7 +19,7 @@ public sealed record FileImportIdentity
 
     public DateTimeOffset LastModifiedAt { get; }
 
-    public OptionalValue<string> ContentHash { get; }
+    public IOptionalValue<string> ContentHash { get; }
 
     public static FileImportIdentity Create(
         FilePath path,

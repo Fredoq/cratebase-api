@@ -4,15 +4,15 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record OwnedItemDetails
 {
-    private OwnedItemDetails(OptionalValue<ItemCondition> condition, OptionalValue<StorageLocation> storageLocation)
+    private OwnedItemDetails(IOptionalValue<ItemCondition> condition, IOptionalValue<StorageLocation> storageLocation)
     {
         Condition = condition;
         StorageLocation = storageLocation;
     }
 
-    public OptionalValue<ItemCondition> Condition { get; }
+    public IOptionalValue<ItemCondition> Condition { get; }
 
-    public OptionalValue<StorageLocation> StorageLocation { get; }
+    public IOptionalValue<StorageLocation> StorageLocation { get; }
 
     public static OwnedItemDetails Empty { get; } = new(
         Optional.Missing<ItemCondition>(),

@@ -5,7 +5,7 @@ namespace Cratebase.Domain.Collection;
 
 public sealed record DigitalFile : IMedium
 {
-    private DigitalFile(FilePath path, AudioFileFormat format, OptionalValue<FileImportIdentity> importIdentity)
+    private DigitalFile(FilePath path, AudioFileFormat format, IOptionalValue<FileImportIdentity> importIdentity)
     {
         Path = path;
         Format = format;
@@ -16,7 +16,7 @@ public sealed record DigitalFile : IMedium
 
     public AudioFileFormat Format { get; }
 
-    public OptionalValue<FileImportIdentity> ImportIdentity { get; }
+    public IOptionalValue<FileImportIdentity> ImportIdentity { get; }
 
     public string Description => "digital file";
 

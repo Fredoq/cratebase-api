@@ -1,6 +1,6 @@
 namespace Cratebase.Domain.SharedKernel.Optional;
 
-public sealed record PresentOptionalValue<T> : OptionalValue<T>
+public sealed record PresentOptionalValue<T> : IOptionalValue<T>
     where T : notnull
 {
     public PresentOptionalValue(T value)
@@ -10,11 +10,12 @@ public sealed record PresentOptionalValue<T> : OptionalValue<T>
         Value = value;
     }
 
-    public override bool HasValue => true;
+    public bool HasValue => true;
 
     public T Value { get; }
 
-    public override TResult Match<TResult>(Func<T, TResult> whenPresent, Func<TResult> whenMissing)
+    public TResult Match<TResult>(Func<T, TResult> whenPresent, Func<TResult> whenMissing)
+        where TResult : notnull
     {
         ArgumentNullException.ThrowIfNull(whenPresent);
         ArgumentNullException.ThrowIfNull(whenMissing);

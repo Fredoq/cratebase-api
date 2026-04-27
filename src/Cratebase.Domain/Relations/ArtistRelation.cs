@@ -12,7 +12,7 @@ public sealed class ArtistRelation : IEntity<ArtistRelationId>
         ArtistId sourceArtistId,
         ArtistId targetArtistId,
         ArtistRelationType type,
-        OptionalValue<ArtistRelationPeriod> period)
+        IOptionalValue<ArtistRelationPeriod> period)
     {
         Id = id;
         SourceArtistId = sourceArtistId;
@@ -29,7 +29,7 @@ public sealed class ArtistRelation : IEntity<ArtistRelationId>
 
     public ArtistRelationType Type { get; }
 
-    public OptionalValue<ArtistRelationPeriod> Period { get; }
+    public IOptionalValue<ArtistRelationPeriod> Period { get; }
 
     public static ArtistRelation Create(
         ArtistRelationId id,

@@ -6,15 +6,15 @@ namespace Cratebase.Domain.Relations;
 
 public sealed record ArtistRelationPeriod
 {
-    private ArtistRelationPeriod(OptionalValue<int> startYear, OptionalValue<int> endYear)
+    private ArtistRelationPeriod(IOptionalValue<int> startYear, IOptionalValue<int> endYear)
     {
         StartYear = startYear;
         EndYear = endYear;
     }
 
-    public OptionalValue<int> StartYear { get; }
+    public IOptionalValue<int> StartYear { get; }
 
-    public OptionalValue<int> EndYear { get; }
+    public IOptionalValue<int> EndYear { get; }
 
     public static ArtistRelationPeriod FromYears(int startYear, int endYear)
     {

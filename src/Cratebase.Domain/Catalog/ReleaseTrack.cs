@@ -5,7 +5,7 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed class ReleaseTrack
 {
-    private ReleaseTrack(TrackId trackId, TrackPosition position, OptionalValue<string> titleOverride)
+    private ReleaseTrack(TrackId trackId, TrackPosition position, IOptionalValue<string> titleOverride)
     {
         TrackId = trackId;
         Position = position;
@@ -16,7 +16,7 @@ public sealed class ReleaseTrack
 
     public TrackPosition Position { get; }
 
-    public OptionalValue<string> TitleOverride { get; }
+    public IOptionalValue<string> TitleOverride { get; }
 
     public static ReleaseTrack Create(TrackId trackId, TrackPosition position)
     {

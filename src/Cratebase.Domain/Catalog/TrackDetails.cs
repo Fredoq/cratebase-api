@@ -6,15 +6,15 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed record TrackDetails
 {
-    private TrackDetails(OptionalValue<TimeSpan> duration, OptionalValue<Rating> rating)
+    private TrackDetails(IOptionalValue<TimeSpan> duration, IOptionalValue<Rating> rating)
     {
         Duration = duration;
         Rating = rating;
     }
 
-    public OptionalValue<TimeSpan> Duration { get; }
+    public IOptionalValue<TimeSpan> Duration { get; }
 
-    public OptionalValue<Rating> Rating { get; }
+    public IOptionalValue<Rating> Rating { get; }
 
     public static TrackDetails Empty { get; } = new(Optional.Missing<TimeSpan>(), Optional.Missing<Rating>());
 

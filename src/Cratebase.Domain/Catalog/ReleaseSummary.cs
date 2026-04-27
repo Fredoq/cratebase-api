@@ -6,7 +6,7 @@ namespace Cratebase.Domain.Catalog;
 
 public sealed record ReleaseSummary
 {
-    private ReleaseSummary(string title, ReleaseMetadata metadata, OptionalValue<Rating> rating)
+    private ReleaseSummary(string title, ReleaseMetadata metadata, IOptionalValue<Rating> rating)
     {
         Title = title;
         Metadata = metadata;
@@ -17,7 +17,7 @@ public sealed record ReleaseSummary
 
     public ReleaseMetadata Metadata { get; }
 
-    public OptionalValue<Rating> Rating { get; }
+    public IOptionalValue<Rating> Rating { get; }
 
     public static ReleaseSummary Create(string title)
     {

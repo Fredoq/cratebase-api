@@ -8,10 +8,10 @@ public sealed record ReleaseMetadata
 {
     private ReleaseMetadata(
         ReleaseType type,
-        OptionalValue<LabelId> labelId,
-        OptionalValue<int> year,
-        OptionalValue<DateOnly> releaseDate,
-        OptionalValue<CoverImage> coverImage)
+        IOptionalValue<LabelId> labelId,
+        IOptionalValue<int> year,
+        IOptionalValue<DateOnly> releaseDate,
+        IOptionalValue<CoverImage> coverImage)
     {
         Type = type;
         LabelId = labelId;
@@ -22,13 +22,13 @@ public sealed record ReleaseMetadata
 
     public ReleaseType Type { get; }
 
-    public OptionalValue<LabelId> LabelId { get; }
+    public IOptionalValue<LabelId> LabelId { get; }
 
-    public OptionalValue<int> Year { get; }
+    public IOptionalValue<int> Year { get; }
 
-    public OptionalValue<DateOnly> ReleaseDate { get; }
+    public IOptionalValue<DateOnly> ReleaseDate { get; }
 
-    public OptionalValue<CoverImage> CoverImage { get; }
+    public IOptionalValue<CoverImage> CoverImage { get; }
 
     public static ReleaseMetadata Empty { get; } = new(
         ReleaseType.Unknown,

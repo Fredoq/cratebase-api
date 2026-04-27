@@ -5,7 +5,7 @@ namespace Cratebase.Domain.Ratings;
 
 public sealed class ReleaseTrackRatingSummary
 {
-    private ReleaseTrackRatingSummary(OptionalValue<decimal> averageRating, int ratedTrackCount)
+    private ReleaseTrackRatingSummary(IOptionalValue<decimal> averageRating, int ratedTrackCount)
     {
         if (ratedTrackCount < 0)
         {
@@ -33,7 +33,7 @@ public sealed class ReleaseTrackRatingSummary
         RatedTrackCount = ratedTrackCount;
     }
 
-    public OptionalValue<decimal> AverageRating { get; }
+    public IOptionalValue<decimal> AverageRating { get; }
 
     public int RatedTrackCount { get; }
 
