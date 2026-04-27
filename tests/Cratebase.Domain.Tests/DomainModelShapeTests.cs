@@ -102,7 +102,7 @@ public sealed class DomainModelShapeTests
             .Count(method =>
                 !method.IsSpecialName &&
                 !method.Name.StartsWith('<') &&
-                method.Name is not nameof(object.Equals) and not nameof(object.GetHashCode) and not nameof(ToString));
+                method.Name is not nameof(Equals) and not nameof(GetHashCode) and not nameof(ToString));
     }
 
     private static IEnumerable<string> NullablePropertyViolations(Type type)
@@ -121,7 +121,7 @@ public sealed class DomainModelShapeTests
         var nullabilityContext = new NullabilityInfoContext();
 
         return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly)
-            .Where(method => !method.IsSpecialName && method.Name is not nameof(object.Equals))
+            .Where(method => !method.IsSpecialName && method.Name is not nameof(Equals))
             .SelectMany(method => method.GetParameters()
                 .Where(parameter =>
                     Nullable.GetUnderlyingType(parameter.ParameterType) is not null ||
