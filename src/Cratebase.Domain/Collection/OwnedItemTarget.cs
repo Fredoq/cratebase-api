@@ -2,8 +2,12 @@ using Cratebase.Domain.SharedKernel.Ids;
 
 namespace Cratebase.Domain.Collection;
 
-public abstract record OwnedItemTarget
+public abstract class OwnedItemTarget
 {
+    private protected OwnedItemTarget()
+    {
+    }
+
     public abstract bool IsRelease { get; }
 
     public abstract bool IsTrack { get; }

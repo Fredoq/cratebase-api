@@ -31,4 +31,12 @@ internal static class Guard
             ? throw new DomainException(code, $"{fieldName} must be positive")
             : value;
     }
+
+    public static TEnum DefinedEnum<TEnum>(TEnum value, string fieldName, string code)
+        where TEnum : struct, Enum
+    {
+        return Enum.IsDefined(value)
+            ? value
+            : throw new DomainException(code, $"{fieldName} is invalid");
+    }
 }

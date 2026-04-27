@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Ids;
 
 namespace Cratebase.Domain.Credits;
 
-public sealed record ReleaseCreditTarget : CreditTarget
+public sealed class ReleaseCreditTarget : CreditTarget
 {
     private ReleaseCreditTarget(ReleaseId releaseId)
     {

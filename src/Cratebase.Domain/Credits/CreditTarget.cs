@@ -2,8 +2,12 @@ using Cratebase.Domain.SharedKernel.Ids;
 
 namespace Cratebase.Domain.Credits;
 
-public abstract record CreditTarget
+public abstract class CreditTarget
 {
+    private protected CreditTarget()
+    {
+    }
+
     public abstract bool IsRelease { get; }
 
     public abstract bool IsTrack { get; }

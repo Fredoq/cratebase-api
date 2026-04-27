@@ -1,5 +1,6 @@
 using Cratebase.Domain.SharedKernel.Ids;
 using Cratebase.Domain.SharedKernel.Interfaces;
+using Cratebase.Domain.SharedKernel.Validation;
 
 namespace Cratebase.Domain.Credits;
 
@@ -26,6 +27,8 @@ public sealed class Credit : IEntity<CreditId>
         ArgumentNullException.ThrowIfNull(contributor);
         ArgumentNullException.ThrowIfNull(target);
 
-        return new Credit(id, contributor, target, role);
+        CreditRole validatedRole = Guard.DefinedEnum(role, nameof(role), "credit.role_invalid");
+
+        return new Credit(id, contributor, target, validatedRole);
     }
 }

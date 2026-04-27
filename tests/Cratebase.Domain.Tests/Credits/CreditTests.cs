@@ -1,5 +1,6 @@
 using Cratebase.Domain.Catalog;
 using Cratebase.Domain.Credits;
+using Cratebase.Domain.SharedKernel.Errors;
 using Cratebase.Domain.SharedKernel.Ids;
 
 namespace Cratebase.Domain.Tests.Credits;
@@ -48,5 +49,18 @@ public sealed class CreditTests
     {
         Assert.Equal(CreditRole.Producer, CreditRole.Producer);
         Assert.NotEqual(CreditRole.Producer, CreditRole.Composer);
+    }
+
+    [Fact]
+    public void Credit_rejects_undefined_roles()
+    {
+        DomainException exception = Assert.Throws<DomainException>(() =>
+            Credit.Create(
+                CreditId.New(),
+                CreditContributor.FromArtist(Person.Create(ArtistId.New(), "Arthur Baker")),
+                CreditTarget.ForRelease(ReleaseId.New()),
+                default));
+
+        Assert.Equal("credit.role_invalid", exception.Code);
     }
 }

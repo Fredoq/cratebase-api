@@ -2,7 +2,7 @@ using Cratebase.Domain.SharedKernel.Ids;
 
 namespace Cratebase.Domain.Collection;
 
-public sealed record TrackOwnedItemTarget : OwnedItemTarget
+public sealed class TrackOwnedItemTarget : OwnedItemTarget
 {
     private TrackOwnedItemTarget(TrackId trackId)
     {
